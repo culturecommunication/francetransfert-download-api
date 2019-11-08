@@ -1,0 +1,10 @@
+---
+applications:
+ - name: sbapi-dev
+   random-route: false
+   path: target/spring-boot-api-0.0.1-SNAPSHOT.jar
+   memory: 1G
+   instances: 1
+   timeout: 120
+   buildpacks:
+     - https://github.com/cloudfoundry/java-buildpack.git

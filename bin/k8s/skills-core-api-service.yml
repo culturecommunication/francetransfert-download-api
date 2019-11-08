@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: francetransfert-download-api
+spec:
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app: francetransfert-download-api
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: francetransfert-download-api
+spec:
+  selector:
+    matchLabels:
+      app: francetransfert-download-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: francetransfert-download-api
+    spec:
+      containers:
+        - image: 423875936657.dkr.ecr.us-east-1.amazonaws.com/skills-mapping/francetransfert-download-api:0.0.1
+          name: francetransfert-download-api
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+          - name: NEO4J_USER
+            value: "neo4j"
+          - name: NEO4J_PASS
+            value: "$skillsgraph"
+          - name: NEO4J_URL
+            value: "bolt://skills-map-neo4j-service.skills-staging:7687"
