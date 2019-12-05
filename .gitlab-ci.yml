@@ -1,50 +1,79 @@
-image: python:3.7.2-alpine
+# Pipeline variables
+variables:
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml -Dmaven.repo.local=.m2/repository --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
 
+# Cache policy - Share target folders between jobs - Note that key is related to a commit and is purged automatically after pipeline execution
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - $CI_PROJECT_DIR/.m2/repository/**/*
+    - $CI_PROJECT_DIR/target/**/*
+
+default:
+  image: maven:3.6.0-jdk-11
+  before_script:
+    - apt update && apt install -y gettext-base
+    - envsubst '${MVN_GROUP} ${MVN_RELEASE} ${MVN_SNAPSHOTS}' < pom.xml > pom.subst && mv -f pom.subst pom.xml
+
+# Stages definition
 stages:
   - build
   - test
-  - deploy
+  - docker-build
 
-services:
-   - docker:18-dind
-
-variables:
-   DOCKER_IMAGE: francetransfert-admin-api:0.0.1     
-   DOCKER_HOST: tcp://docker:2375/
-   DOCKER_DRIVER: overlay2
-
-before_script:
-  - pip install --upgrade pip
-  - pip3 install awscli --upgrade
-  - apk --no-cache add curl
-  - apk add docker
-
-smapi:build:
-  stage: build
-  only:
-    - master
-    - develop
-    - automation
-  tags:
-    - squads-aws
+# Build job with maven plugin execution policies define in parent pom
+sbapi:build:
   script:
-    - echo "Pipeline Build stage ..."
-    - docker build -t ${DOCKER_REGISTRY_BASE_URI}/$DOCKER_IMAGE .
-    - eval $(aws ecr get-login --no-include-email)
-    - docker push ${DOCKER_REGISTRY_BASE_URI}/$DOCKER_IMAGE
+    - sh ./mvnw $MAVEN_CLI_OPTS -U package
+  stage : build
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/target/francetransfert-download-api-*.jar
 
-smapi:deploy:
-  stage: deploy
-  only:
-    - master
-    - develop
-    - automation
-  tags: 
-    - squads-aws
+# Sonar code quality analysis - note a full test coverage report through a jacoco.exec merged file in base project folder
+sbapi:sonar:
+  stage: test
+  dependencies:
+    - sbapi:build
+  except:
+    refs:
+      - master
   script:
-    - echo "Pipeline Deploy stage ..."
-    - curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-    - chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
-    - aws eks --region ${AWS_DEFAULT_REGION} update-kubeconfig --name ${K8S_CLUSTER_NAME}
-    - kubectl delete -f k8s/francetransfert-admin-api-service.yml -n skills-staging  
-    - kubectl apply -f k8s/francetransfert-admin-api-service.yml -n skills-staging
+    - >
+      sh ./mvnw $MAVEN_CLI_OPTS -U sonar:sonar
+      -Dsonar.host.url=$SONAR_URL
+      -Dsonar.login=$SONAR_TOKEN
+      -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+      -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
+      -Dsonar.gitlab.project_id=$CI_PROJECT_ID
+      -Dsonar.branch.name=$CI_COMMIT_REF_NAME
+
+# On master, do not use branch parameter
+sbapi:sonar:master:
+  stage: test
+  dependencies:
+    - sbapi:build
+  only:
+    refs:
+      - master
+  script:
+    - >
+      sh ./mvnw $MAVEN_CLI_OPTS -U sonar:sonar
+      -Dsonar.host.url=$SONAR_URL
+      -Dsonar.login=$SONAR_TOKEN
+      -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
+      -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
+      -Dsonar.gitlab.project_id=$CI_PROJECT_ID
+
+docker-build:
+  image: docker:stable
+  stage: docker-build
+  services:
+    - docker:18-dind
+  script:
+    - _tmpTag="$(date "+%Y%m%d%H%M")"_"$CI_COMMIT_SHORT_SHA"
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+    - docker build -t "$CI_REGISTRY_IMAGE":"$_tmpTag" .
+    - docker tag "$CI_REGISTRY_IMAGE":"$_tmpTag" "$CI_REGISTRY_IMAGE":latest
+    - docker push "$CI_REGISTRY_IMAGE":"$_tmpTag"
+    - docker push "$CI_REGISTRY_IMAGE":latest
