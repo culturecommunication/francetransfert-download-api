@@ -40,6 +40,23 @@
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
         <jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
     </properties>
+    
+    <repositories>
+    <repository>
+      <id>gitlab-nexus</id>
+      <url>${env.MVN_RELEASES}</url>
+    </repository>
+  </repositories>
+  <distributionManagement>
+    <repository>
+      <id>gitlab-nexus</id>
+      <url>${env.MVN_RELEASES}</url>
+    </repository>
+    <snapshotRepository>
+      <id>gitlab-nexus</id>
+      <url>${env.MVN_SNAPSHOTS}</url>
+    </snapshotRepository>
+  </distributionManagement>
 
     <dependencies>
         <!-- Spring boot dependencies -->
