@@ -1,6 +1,7 @@
-package com.opengroup.jsbapi;
+package fr.gouv.culture.francetransfert;
 
-import com.opengroup.jsbapi.domain.utils.DateUtils;
+import fr.gouv.culture.francetransfert.domain.utils.DateUtils;
+import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.Calendar;
@@ -17,7 +18,7 @@ public class DateUtilsTest {
     public void testIsSameInstant_Date() {
         Date datea = new GregorianCalendar(2004, 6, 9, 13, 45).getTime();
         Date dateb = new GregorianCalendar(2004, 6, 9, 13, 45).getTime();
-        assertTrue(DateUtils.isSameInstant(datea, dateb));
+        TestCase.assertTrue(DateUtils.isSameInstant(datea, dateb));
         dateb = new GregorianCalendar(2004, 6, 10, 13, 45).getTime();
         assertFalse(DateUtils.isSameInstant(datea, dateb));
         datea = new GregorianCalendar(2004, 6, 10, 13, 45).getTime();

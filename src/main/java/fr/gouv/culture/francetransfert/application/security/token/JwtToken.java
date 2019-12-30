@@ -1,4 +1,4 @@
-package com.opengroup.jsbapi.application.security.token;
+package fr.gouv.culture.francetransfert.application.security.token;
 
 import lombok.Data;
 

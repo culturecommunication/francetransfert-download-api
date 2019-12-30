@@ -1,7 +1,7 @@
-package com.opengroup.jsbapi;
+package fr.gouv.culture.francetransfert;
 
 import com.google.common.collect.Lists;
-import com.opengroup.jsbapi.application.security.filter.JwtAuthenticationFilter;
+import fr.gouv.culture.francetransfert.application.security.filter.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -34,7 +34,7 @@ import java.util.Collections;
 @EnableSwagger2
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @SpringBootApplication
-public class StarterKitApplicationStarter extends WebSecurityConfigurerAdapter {
+public class FranceTransfertDownloadStarter extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private Environment env;
@@ -49,7 +49,7 @@ public class StarterKitApplicationStarter extends WebSecurityConfigurerAdapter {
      * @param args the input arguments
      */
     public static void main(String[] args) {
-        SpringApplication.run(StarterKitApplicationStarter.class, args);
+        SpringApplication.run(FranceTransfertDownloadStarter.class, args);
     }
 
 
@@ -74,7 +74,7 @@ public class StarterKitApplicationStarter extends WebSecurityConfigurerAdapter {
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.opengroup.jsbapi.application.resources"))
+                .apis(RequestHandlerSelectors.basePackage("fr.gouv.culture.francetransfert.application.resources"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo())

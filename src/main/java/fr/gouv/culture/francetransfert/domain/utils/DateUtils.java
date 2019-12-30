@@ -1,4 +1,4 @@
-package com.opengroup.jsbapi.domain.utils;
+package fr.gouv.culture.francetransfert.domain.utils;
 
 import java.util.Calendar;
 import java.util.Date;

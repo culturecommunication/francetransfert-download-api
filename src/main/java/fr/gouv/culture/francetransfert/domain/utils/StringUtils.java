@@ -1,4 +1,4 @@
-package com.opengroup.jsbapi.domain.utils;
+package fr.gouv.culture.francetransfert.domain.utils;
 
 /**
  * StringUtils class

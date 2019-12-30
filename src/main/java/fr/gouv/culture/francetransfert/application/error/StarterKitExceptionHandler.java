@@ -1,10 +1,10 @@
-package com.opengroup.jsbapi.application.error;
+package fr.gouv.culture.francetransfert.application.error;
 
 
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTDecodeException;
-import com.opengroup.jsbapi.domain.exceptions.BusinessDomainException;
-import com.opengroup.jsbapi.domain.exceptions.DomainNotFoundException;
+import fr.gouv.culture.francetransfert.domain.exceptions.BusinessDomainException;
+import fr.gouv.culture.francetransfert.domain.exceptions.DomainNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
