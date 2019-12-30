@@ -1,6 +1,6 @@
-package com.opengroup.jsbapi;
+package fr.gouv.culture.francetransfert;
 
-import com.opengroup.jsbapi.domain.utils.StringUtils;
+import fr.gouv.culture.francetransfert.domain.utils.StringUtils;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

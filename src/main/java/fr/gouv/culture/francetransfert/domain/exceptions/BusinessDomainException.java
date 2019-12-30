@@ -1,4 +1,4 @@
-package com.opengroup.jsbapi.domain.exceptions;
+package fr.gouv.culture.francetransfert.domain.exceptions;
 
 /**
  * Class to throw a custom business exception

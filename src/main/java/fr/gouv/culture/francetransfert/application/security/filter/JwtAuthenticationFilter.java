@@ -1,9 +1,9 @@
-package com.opengroup.jsbapi.application.security.filter;
+package fr.gouv.culture.francetransfert.application.security.filter;
 
-import com.opengroup.jsbapi.application.error.UnauthorizedAccessException;
-import com.opengroup.jsbapi.application.security.services.TokenService;
-import com.opengroup.jsbapi.application.security.token.JwtToken;
-import com.opengroup.jsbapi.domain.utils.StringUtils;
+import fr.gouv.culture.francetransfert.application.error.UnauthorizedAccessException;
+import fr.gouv.culture.francetransfert.application.security.services.TokenService;
+import fr.gouv.culture.francetransfert.application.security.token.JwtToken;
+import fr.gouv.culture.francetransfert.domain.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

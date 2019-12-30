@@ -1,4 +1,4 @@
-package com.opengroup.jsbapi;
+package fr.gouv.culture.francetransfert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

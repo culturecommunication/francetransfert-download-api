@@ -1,4 +1,4 @@
-package com.opengroup.jsbapi.application.error;
+package fr.gouv.culture.francetransfert.application.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
