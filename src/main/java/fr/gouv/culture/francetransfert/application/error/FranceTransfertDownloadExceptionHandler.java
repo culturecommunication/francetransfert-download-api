@@ -1,10 +1,12 @@
 package fr.gouv.culture.francetransfert.application.error;
 
 
+import com.amazonaws.SdkClientException;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import fr.gouv.culture.francetransfert.domain.exceptions.BusinessDomainException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DomainNotFoundException;
+import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -23,9 +25,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  * @since 1.0.0
  */
 @ControllerAdvice
-public class StarterKitExceptionHandler extends ResponseEntityExceptionHandler {
+public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StarterKitExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FranceTransfertDownloadExceptionHandler.class);
 
     @Override
     protected ResponseEntity<Object> handleNoHandlerFoundException(
@@ -52,4 +54,23 @@ public class StarterKitExceptionHandler extends ResponseEntityExceptionHandler {
         LOGGER.error(ex.getMessage());
         return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(),ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(SdkClientException.class)
+    public ResponseEntity<Object>  handleSdkClientException(Exception ex)  {
+        LOGGER.error(ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(DownloadException.class)
+    public ResponseEntity<Object>  handleDownloadException(Exception ex)  {
+        LOGGER.error(ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<Object>  handleUnauthorizedAccessException(Exception ex)  {
+        LOGGER.error(ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 }
