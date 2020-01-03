@@ -37,8 +37,6 @@ public class DownloadServiceTest {
         Assert.assertTrue(downloadRepresentation != null);
     }
 
-
-
     @After
     public void tearDown() throws Exception {
 

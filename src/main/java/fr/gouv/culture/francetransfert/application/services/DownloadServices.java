@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,17 +24,17 @@ import java.util.List;
 public class DownloadServices {
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadServices.class);
 
-    @Value("${max.download}")
+    @Value("${enclosure.max.download}")
     private int maxDownload;
 
-    @Value("${expire.month}")
+    @Value("${enclosure.expire.month}")
     private int expireMonth;
 
 
     public DownloadRepresentation processDownload(String mailRecipient, String enclosureId, String password) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        if (!password.equals(passwordRedis)) {
+        if (!(password != null && passwordRedis != null && password.equals(passwordRedis))) {
             throw new UnauthorizedAccessException("accès interdit");
         }
         return getDownloadInfo(redisManager, mailRecipient, enclosureId, true);
@@ -56,7 +57,7 @@ public class DownloadServices {
 
     private DownloadRepresentation processDownloadWithUrl(RedisManager redisManager, String mailRecipient, String enclosureId) throws Exception {
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        if (!passwordRedis.isEmpty()) {
+        if (!StringUtils.isEmpty(passwordRedis)) {
             throw new UnauthorizedAccessException("accès interdit");
         }
         return getDownloadInfo(redisManager, mailRecipient, enclosureId, true);
