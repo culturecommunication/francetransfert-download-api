@@ -27,8 +27,8 @@ public class DownloadServices {
     @Value("${enclosure.max.download}")
     private int maxDownload;
 
-    @Value("${enclosure.expire.month}")
-    private int expireMonth;
+    @Value("${enclosure.expire.days}")
+    private int expiredays;
 
 
     public DownloadRepresentation processDownload(String mailRecipient, String enclosureId, String password) throws Exception {
@@ -68,7 +68,7 @@ public class DownloadServices {
         if (maxDownload < numberOfDownload) {
             throw new DownloadException("vous avez atteint le nombre maximum de telechargement");
         }
-        LocalDate expirationDate = DateUtils.convertStringToLocalDate(RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.TIMESTAMP.getKey())).plusMonths(expireMonth);
+        LocalDate expirationDate = DateUtils.convertStringToLocalDate(RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.TIMESTAMP.getKey())).plusDays(expiredays);
         if (LocalDate.now().isAfter(expirationDate)) {
             throw new DownloadException("vous ne pouvez plus telecharger ces fichiers");
         }
