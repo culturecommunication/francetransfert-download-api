@@ -27,6 +27,7 @@
         <build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
         <model.mapper.version>2.3.0</model.mapper.version>
         <java.jwt.version>3.7.0</java.jwt.version>
+        <jjwt.version>0.10.6</jjwt.version>
         <!-- java version -->
         <java.source.version>11</java.source.version>
         <java.target.version>11</java.target.version>
@@ -150,10 +151,35 @@
             <version>${java.jwt.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jjwt.version}</version>
+        </dependency>
+        <dependency>
             <groupId>io.gatling.highcharts</groupId>
             <artifactId>gatling-charts-highcharts</artifactId>
             <version>3.0.1</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.opengroup.mc.francetransfert.api</groupId>
+            <artifactId>francetransfert-metaload-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.opengroup.mc.francetransfert.api</groupId>
+            <artifactId>francetransfert-storage-api</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>

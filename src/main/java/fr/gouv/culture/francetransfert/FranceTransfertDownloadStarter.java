@@ -25,6 +25,8 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 
 
@@ -104,7 +106,9 @@ public class FranceTransfertDownloadStarter extends WebSecurityConfigurerAdapter
     public FilterRegistrationBean jwtFilterRegistrationBean() {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
         registrationBean.setFilter(jwtAuthenticationFilter);
-        registrationBean.addUrlPatterns("/secured/*");
+        Collection<String> securedUrls = new ArrayList<>();
+        securedUrls.add("/secured/*");
+        registrationBean.setUrlPatterns(securedUrls);
         registrationBean.setOrder(1);
         return registrationBean;
     }
