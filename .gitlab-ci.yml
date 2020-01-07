@@ -36,9 +36,9 @@ sbapi:sonar:
   stage: test
   dependencies:
     - sbapi:build
-  only:
+  except:
     refs:
-      - develop
+      - master
   script:
     - >
       sh ./mvnw $MAVEN_CLI_OPTS -U sonar:sonar
@@ -47,7 +47,7 @@ sbapi:sonar:
       -Dsonar.gitlab.commit_sha=$CI_COMMIT_SHA
       -Dsonar.gitlab.ref_name=$CI_COMMIT_REF_NAME
       -Dsonar.gitlab.project_id=$CI_PROJECT_ID
-      -Dsonar.branch.name=$DEVELOP_BRANCH
+      -Dsonar.branch.name=$CI_COMMIT_REF_NAME
   allow_failure: true
 
 # On master, do not use branch parameter
