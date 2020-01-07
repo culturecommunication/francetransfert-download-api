@@ -44,8 +44,7 @@ sbapi:sonar:
       mvn sonar:sonar
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_TOKEN
-      -Dsonar.projectKey=$SONAR_KEY$CI_PROJECT_NAME
-      -Dsonar.gitlab.project_id=$SONAR_KEY$CI_PROJECT_NAME
+      -Dsonar.projectKey="mc.francetransfert.francetransfert-download-api"
   allow_failure: true
 
 # On master, do not use branch parameter
