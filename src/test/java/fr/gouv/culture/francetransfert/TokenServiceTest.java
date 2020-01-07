@@ -33,8 +33,8 @@ public class TokenServiceTest {
     @Test
     public void validateTokenFranceTransfert() throws Exception {
         //given
-        String enclosureId = "8ffd72f0-4432-4e07-b247-362b1eb4edfb";
-        String mailRecipient = "louay@live.fr";
+        String enclosureId = "enclosureId";
+        String mailRecipient = "louayhadded2012@gmail.com";
         boolean withPassword = false;
         //when
         JwtRequest jwtRequest = tokenService.validateTokenDownload(token);
