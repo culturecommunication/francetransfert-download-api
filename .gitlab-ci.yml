@@ -41,7 +41,7 @@ sbapi:sonar:
       - master
   script:
     - >
-      sh ./mvnw $MAVEN_CLI_OPTS -U sonar:sonar
+      mvn sonar:sonar
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_TOKEN
       -Dsonar.projectKey=$SONAR_KEY$CI_PROJECT_NAME
