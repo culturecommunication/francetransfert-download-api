@@ -45,6 +45,7 @@ sbapi:sonar:
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_TOKEN
       -Dsonar.projectKey=$CI_SONAR_PROJECT_KEY_DEVELOP
+      -Dsonar.projectName=$CI_SONAR_PROJECT_KEY_DEVELOP
   allow_failure: true
 
 # On master, do not use branch parameter
@@ -61,6 +62,7 @@ sbapi:sonar:master:
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_TOKEN
       -Dsonar.projectKey=$CI_SONAR_PROJECT_KEY_MASTER
+      -Dsonar.projectName=$CI_SONAR_PROJECT_KEY_MASTER
 
 docker-build:
   image: docker:stable
