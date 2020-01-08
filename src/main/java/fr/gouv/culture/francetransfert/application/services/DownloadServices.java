@@ -31,40 +31,23 @@ public class DownloadServices {
     private int expiredays;
 
 
-    public DownloadRepresentation processDownload(String mailRecipient, String enclosureId, String password) throws Exception {
+    public DownloadRepresentation processDownload(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
         if (!(password != null && passwordRedis != null && password.equals(passwordRedis))) {
             throw new UnauthorizedAccessException("accès interdit");
         }
-        return getDownloadInfo(redisManager, mailRecipient, enclosureId, true);
+        return getDownloadInfo(redisManager, enclosureId, recipientId, recipientMail, true );
     }
 
-    public DownloadRepresentation downloadAuthority(String mailRecipient, String enclosureId, boolean withPassword) throws Exception {
+    public DownloadRepresentation downloadInfo(String enclosureId, String recipientMail, String recipientId) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
-        DownloadRepresentation downloadRepresentation = null;
-        if (withPassword) {
-            downloadRepresentation = processDownloadWithoutUrl(redisManager, mailRecipient, enclosureId);
-        } else {
-            downloadRepresentation = processDownloadWithUrl(redisManager, mailRecipient, enclosureId);
-        }
-        return downloadRepresentation;
-    }
-
-    private DownloadRepresentation processDownloadWithoutUrl(RedisManager redisManager, String mailRecipient, String enclosureId) throws Exception {
-        return getDownloadInfo(redisManager, mailRecipient, enclosureId, false);
-    }
-
-    private DownloadRepresentation processDownloadWithUrl(RedisManager redisManager, String mailRecipient, String enclosureId) throws Exception {
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        if (!StringUtils.isEmpty(passwordRedis)) {
-            throw new UnauthorizedAccessException("accès interdit");
-        }
-        return getDownloadInfo(redisManager, mailRecipient, enclosureId, true);
+        return getDownloadInfo(redisManager, enclosureId, recipientId, recipientMail, StringUtils.isEmpty(passwordRedis));
     }
 
-    private DownloadRepresentation getDownloadInfo(RedisManager redisManager, String mailRecipient, String enclosureId, boolean withUrl) throws Exception {
-        int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, mailRecipient, enclosureId);
+    private DownloadRepresentation getDownloadInfo(RedisManager redisManager, String enclosureId, String recipientId, String recipientMail, boolean withUrl) throws Exception {
+        int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
         if (maxDownload < numberOfDownload) {
             throw new DownloadException("vous avez atteint le nombre maximum de telechargement");
         }
