@@ -60,7 +60,7 @@ sbapi:sonar:master:
       mvn sonar:sonar
       -Dsonar.host.url=$SONAR_URL
       -Dsonar.login=$SONAR_TOKEN
-      -Dsonar.projectKey==$CI_SONAR_PROJECT_KEY_MASTER
+      -Dsonar.projectKey=$CI_SONAR_PROJECT_KEY_MASTER
 
 docker-build:
   image: docker:stable
