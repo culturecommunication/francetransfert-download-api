@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Base64;
+
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FranceTransfertDownloadStarter.class)
@@ -21,15 +23,17 @@ public class DownloadServiceTest {
     public void setUp() throws Exception {
 
     }
-    @Ignore
+
+    @Ignore // TODO; delete @Ignore when implement Redis in environment integration
     @Test
-    public void shouldSendMailToRecipient() throws Exception {
+    public void downloadTest() throws Exception {
         //given
         String enclosureId = "8ffd72f0-4432-4e07-b247-362b1eb4edfb";
-        String mailRecipient = "louay@live.fr";
+        String recipientMail = "louay@live.fr";
+        String recipientId = "8ffd72f0-4432-4e07-b247-362b1eb4vfrt";
         String password = "";
         //when
-        DownloadRepresentation downloadRepresentation = downloadServices.processDownload(mailRecipient, enclosureId, password);
+        DownloadRepresentation downloadRepresentation = downloadServices.processDownload(enclosureId, recipientMail, recipientId, password);
         //then
         Assert.assertTrue(downloadRepresentation != null);
     }
