@@ -1,7 +1,6 @@
 package fr.gouv.culture.francetransfert.application.resources;
 
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
-import fr.gouv.culture.francetransfert.application.security.services.TokenService;
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,35 +25,29 @@ public class DownloadRessources {
     @Autowired
     DownloadServices downloadServices;
 
-    @Autowired
-    TokenService tokenService;
 
-
-    @GetMapping("/download")
-    @ApiOperation(httpMethod = "GET", value = "Download  ")
-    public DownloadRepresentation processDownload(HttpServletResponse response,
+    @GetMapping("/generate-download-url")
+    @ApiOperation(httpMethod = "GET", value = "Generate download URL ")
+    public void generateDownloadUrlWithPassword(HttpServletResponse response,
                                                   @RequestParam("enclosure") String enclosureId,
                                                   @RequestParam("recipient") String recipientMail,
                                                   @RequestParam("token") String recipientId,
                                                   @RequestParam("password") String password) throws Exception {
-        DownloadRepresentation downloadRepresentation = downloadServices.processDownload(enclosureId, recipientMail, recipientId, password);
-        response.setStatus(HttpStatus.OK.value());
-        return downloadRepresentation;
+        String downloadURL = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
+        response.setStatus(HttpStatus.FOUND.value());
+        response.setHeader("Location", downloadURL);
     }
 
 
     @GetMapping("/download-info")
-    @ApiOperation(httpMethod = "GET", value = "Download Info")
+    @ApiOperation(httpMethod = "GET", value = "Download Info without URL ")
     public DownloadRepresentation downloadinfo(HttpServletResponse response,
                                                 @RequestParam("enclosure") String enclosureId,
-                                                @RequestParam("recipient") String recipientMail,
+                                                @RequestParam("recipient") String recipientMailInBase64,
                                                 @RequestParam("token") String recipientId) throws Exception {
-        DownloadRepresentation downloadRepresentation = downloadServices.downloadInfo(enclosureId, recipientMail, recipientId);
+        DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfo(enclosureId, recipientMailInBase64, recipientId);
         response.setStatus(HttpStatus.OK.value());
         return downloadRepresentation;
     }
-
-
-
 
 }
