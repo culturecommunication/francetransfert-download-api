@@ -10,6 +10,7 @@ import fr.gouv.culture.francetransfert.application.resources.model.DirectoryRepr
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
 import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.domain.utils.DownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,46 +28,32 @@ public class DownloadServices {
     @Value("${enclosure.max.download}")
     private int maxDownload;
 
-    @Value("${enclosure.expire.days}")
-    private int expiredays;
-
-
-    public DownloadRepresentation processDownload(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
+    public String generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
-        String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        if (!(password != null && passwordRedis != null && password.equals(passwordRedis))) {
-            throw new UnauthorizedAccessException("accès interdit");
-        }
-        return getDownloadInfo(redisManager, enclosureId, recipientId, recipientMail, true );
+        validatePassword(redisManager, enclosureId, password);
+        String recipientMailD = DownloadUtils.base64Decoder(recipientMail);
+        validateDownloadAuthorization(redisManager, enclosureId, recipientMailD, recipientId);
+        downloadProgress(redisManager, enclosureId, recipientId);
+        return getDownloadUrl(redisManager, enclosureId);
     }
 
-    public DownloadRepresentation downloadInfo(String enclosureId, String recipientMail, String recipientId) throws Exception {
+    public DownloadRepresentation getDownloadInfo(String enclosureId, String recipientId, String recipientMailInBase64) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
-        String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        return getDownloadInfo(redisManager, enclosureId, recipientId, recipientMail, StringUtils.isEmpty(passwordRedis));
-    }
+        //validate Enclosure download right
+        String recipientMail = DownloadUtils.base64Decoder(recipientMailInBase64);
+        LocalDate expirationDate = validateDownloadAuthorization(redisManager, enclosureId, recipientMail, recipientId);
 
-    private DownloadRepresentation getDownloadInfo(RedisManager redisManager, String enclosureId, String recipientId, String recipientMail, boolean withUrl) throws Exception {
-        int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
-        if (maxDownload < numberOfDownload) {
-            throw new DownloadException("vous avez atteint le nombre maximum de telechargement");
-        }
-        LocalDate expirationDate = DateUtils.convertStringToLocalDate(RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.TIMESTAMP.getKey())).plusDays(expiredays);
-        if (LocalDate.now().isAfter(expirationDate)) {
-            throw new DownloadException("vous ne pouvez plus telecharger ces fichiers");
-        }
+        String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
         String senderMail = RedisUtils.getSenderEnclosure(redisManager, enclosureId);
-        String downloadUrl = withUrl ? getDownloadUrl(redisManager, enclosureId) : null;
         List<FileRepresentation> rootFiles = getRootFiles(redisManager, enclosureId);
         List<DirectoryRepresentation> rootDirs = getRootDirs(redisManager, enclosureId);
 
         return DownloadRepresentation.builder()
-                .nbPrevDownloads(numberOfDownload)
                 .validUntilDate(expirationDate)
                 .senderEmail(senderMail)
                 .rootFiles(rootFiles)
                 .rootDirs(rootDirs)
-                .downloadURL(downloadUrl)
+                .withPassword(!StringUtils.isEmpty(passwordRedis))
                 .build();
     }
 
@@ -75,6 +62,60 @@ public class DownloadServices {
         String bucketName = RedisUtils.getBucketName(redisManager, enclosureId);
         String fileToDownload = enclosureId+".zip";
         return storageManager.generateDownloadURL(bucketName, fileToDownload).toString();
+    }
+
+    /**
+     * Method to validate download authorization : validate number of download, validate expiration date and validate recipientId sended by the front
+     * @param redisManager
+     * @param enclosureId
+     * @param recipientMail
+     * @param recipientId
+     * @return enclosure expiration Date
+     * @throws Exception
+     */
+    private LocalDate validateDownloadAuthorization(RedisManager redisManager, String enclosureId, String recipientMail, String recipientId) throws Exception {
+        validateRecipientId(redisManager, enclosureId, recipientMail, recipientId);
+        validateNumberOfDownload(redisManager, recipientId);
+        LocalDate expirationDate = validateExpirationDate(redisManager, enclosureId);
+        return expirationDate;
+    }
+
+    private LocalDate validateExpirationDate(RedisManager redisManager, String enclosureId) throws Exception {
+        LocalDate expirationDate = DateUtils.convertStringToLocalDate(RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.EXPIRED_TIMESTAMP.getKey()));
+        if (LocalDate.now().isAfter(expirationDate)) {
+            throw new DownloadException("vous ne pouvez plus telecharger ces fichiers");
+        }
+        return expirationDate;
+    }
+
+    private int validateNumberOfDownload(RedisManager redisManager, String recipientId) throws Exception {
+        int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
+        if (maxDownload < numberOfDownload) {
+            throw new DownloadException("vous avez atteint le nombre maximum de telechargement");
+        }
+        return numberOfDownload;
+    }
+
+    private void validateRecipientId(RedisManager redisManager, String enclosureId, String recipientMail, String recipientId) throws Exception {
+        String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
+        if (!recipientIdRedis.equals(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId))) {
+            throw new DownloadException("accès interdit");
+        }
+    }
+
+    private void validatePassword(RedisManager redisManager, String enclosureId, String password) throws Exception {
+        String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
+        if (!(password != null && passwordRedis != null && password.equals(passwordRedis))) {
+            throw new UnauthorizedAccessException("accès interdit");
+        }
+    }
+
+    private void downloadProgress(RedisManager redisManager, String enclosureId, String recipientId) throws Exception {
+        // increment nb_download for this recipient
+        RedisUtils.incrementNumberOfDownloadsForRecipient(redisManager, recipientId);
+        // add to queue Redis download progress: to send download mail in progress to the sender
+        String downloadQueueValue =  enclosureId + ":" + recipientId;
+        redisManager.rpush(RedisQueueEnum.DOWNLOAD_QUEUE.getValue(), downloadQueueValue);
     }
 
     private List<FileRepresentation> getRootFiles(RedisManager redisManager, String enclosureId) {

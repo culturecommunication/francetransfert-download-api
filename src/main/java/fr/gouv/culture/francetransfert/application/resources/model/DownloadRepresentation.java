@@ -12,10 +12,9 @@ import java.util.List;
 @NoArgsConstructor
 public class DownloadRepresentation {
 
-    private int nbPrevDownloads;
     private LocalDate validUntilDate;
     private String senderEmail;
     private List<FileRepresentation> rootFiles;
     private List<DirectoryRepresentation> rootDirs;
-    private String downloadURL;
+    private boolean withPassword;
 }

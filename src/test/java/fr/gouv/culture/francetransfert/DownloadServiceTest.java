@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Base64;
-
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FranceTransfertDownloadStarter.class)
@@ -33,9 +31,9 @@ public class DownloadServiceTest {
         String recipientId = "8ffd72f0-4432-4e07-b247-362b1eb4vfrt";
         String password = "";
         //when
-        DownloadRepresentation downloadRepresentation = downloadServices.processDownload(enclosureId, recipientMail, recipientId, password);
+        String downloadUrl = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
         //then
-        Assert.assertTrue(downloadRepresentation != null);
+        Assert.assertTrue(downloadUrl != null);
     }
 
     @After
