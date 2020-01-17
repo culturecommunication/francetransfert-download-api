@@ -22,12 +22,21 @@ stages:
   - build
   - test
   - docker-build
-
+variables:
+  APP_PROJECT_ID: 552
+  
 # Build job with maven plugin execution policies define in parent pom
-pre-build:
+sbapi:pre-build:
+  script:
+    - echo "building metaload dependancy"
   stage : pre-build
-  trigger:
-    project: mc/francetransfert/francetransfert-metaload-api
+  script:
+    - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=develop https://gitlab.com/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
+  only:
+    - develop
+  
+#   trigger:
+#     project: mc/francetransfert/francetransfert-metaload-api
 
 # Build job with maven plugin execution policies define in parent pom
 sbapi:build:
