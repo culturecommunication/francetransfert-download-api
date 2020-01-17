@@ -30,8 +30,6 @@ sbapi:pre-build:
   stage : pre-build
   script:
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=develop https://gitlab.com/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
-  only:
-    - develop
   
 #   trigger:
 #     project: mc/francetransfert/francetransfert-metaload-api
