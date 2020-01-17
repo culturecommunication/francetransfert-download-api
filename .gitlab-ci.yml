@@ -2,6 +2,7 @@
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml -Dmaven.repo.local=.m2/repository --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   DEVELOP_BRANCH: "develop"
+  APP_PROJECT_ID: 552
 
 # Cache policy - Share target folders between jobs - Note that key is related to a commit and is purged automatically after pipeline execution
 cache:
@@ -22,8 +23,6 @@ stages:
   - build
   - test
   - docker-build
-variables:
-  APP_PROJECT_ID: 552
   
 # Build job with maven plugin execution policies define in parent pom
 sbapi:pre-build:
