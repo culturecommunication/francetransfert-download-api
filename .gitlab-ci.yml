@@ -24,7 +24,7 @@ stages:
   - docker-build
 
 # Build job with maven plugin execution policies define in parent pom
-sbapi:pre-build:
+pre-buildJob:
   stage : pre-build
   trigger:
     project: mc/francetransfert/francetransfert-metaload-api
