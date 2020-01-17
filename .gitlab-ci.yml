@@ -18,6 +18,7 @@ default:
 
 # Stages definition
 stages:
+  - pre-build
   - build
   - test
   - docker-build
