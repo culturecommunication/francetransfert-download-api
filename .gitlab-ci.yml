@@ -28,7 +28,7 @@ stages:
 sbapi:pre-build:
   stage : pre-build
   script:
-    - curl --request POST --form "token=2f4704fc8474a4e34fc210a4cf83c6" --form ref=develop https://gitlab.com/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
+    - curl --request POST --form "token=3abfd829c2450ad19c21d3484fe9cc" --form ref=develop https://gitlab.com/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
   
 #   trigger:
 #     project: mc/francetransfert/francetransfert-metaload-api
