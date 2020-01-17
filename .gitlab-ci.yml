@@ -27,8 +27,6 @@ variables:
   
 # Build job with maven plugin execution policies define in parent pom
 sbapi:pre-build:
-  script:
-    - echo "building metaload dependancy"
   stage : pre-build
   script:
     - curl --request POST --form "token=$CI_JOB_TOKEN" --form ref=develop https://gitlab.com/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
