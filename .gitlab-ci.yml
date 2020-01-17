@@ -31,7 +31,7 @@ sbapi:pre-build:
 #     - curl --request POST --form "token=3abfd829c2450ad19c21d3484fe9cc" --form ref=develop https://gitlab.boost.open.global/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
   image: registry.gitlab.com/finestructure/pipeline-trigger
   script:
-    - trigger -h https://gitlab.boost.open.global -u  -a dp2ekqQjs66hsH9kXVNT -p 3abfd829c2450ad19c21d3484fe9cc -t develop 552
+    - trigger -h https://gitlab.boost.open.global -a dp2ekqQjs66hsH9kXVNT -p 3abfd829c2450ad19c21d3484fe9cc -t develop 552
 #   trigger:
 #     project: mc/francetransfert/francetransfert-metaload-api
 
