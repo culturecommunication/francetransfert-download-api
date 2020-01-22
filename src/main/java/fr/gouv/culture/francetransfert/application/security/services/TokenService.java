@@ -116,7 +116,9 @@ public class TokenService {
         } catch (Exception var5) {
             throw new DownloadException("access denied");
         }finally {
-			in.close();
+        	if(in != null) {
+        		in.close();
+        	}
 		}
     }
 
