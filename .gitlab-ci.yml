@@ -2,7 +2,6 @@
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml -Dmaven.repo.local=.m2/repository --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   DEVELOP_BRANCH: "develop"
-  APP_PROJECT_ID: 552
 
 # Cache policy - Share target folders between jobs - Note that key is related to a commit and is purged automatically after pipeline execution
 cache:
@@ -19,21 +18,9 @@ default:
 
 # Stages definition
 stages:
-  - pre-build
   - build
   - test
   - docker-build
-  
-# Build job with maven plugin execution policies define in parent pom
-sbapi:pre-build:
-  stage : pre-build
-#   script:
-#     - curl --request POST --form "token=3abfd829c2450ad19c21d3484fe9cc" --form ref=develop https://gitlab.boost.open.global/api/v4/projects/$APP_PROJECT_ID/trigger/pipeline
-  image: registry.gitlab.com/finestructure/pipeline-trigger
-  script:
-    - trigger -h https://gitlab.boost.open.global -a dp2ekqQjs66hsH9kXVNT -p 3abfd829c2450ad19c21d3484fe9cc -t develop 552
-#   trigger:
-#     project: mc/francetransfert/francetransfert-metaload-api
 
 # Build job with maven plugin execution policies define in parent pom
 sbapi:build:
