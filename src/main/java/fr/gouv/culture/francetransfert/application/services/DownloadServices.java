@@ -13,6 +13,7 @@ import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.utils.DownloadUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,10 +24,14 @@ import java.util.List;
 
 @Service
 public class DownloadServices {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DownloadServices.class);
 
     @Value("${enclosure.max.download}")
     private int maxDownload;
+
+    @Autowired
+    PasswordHasherServices passwordHasherServices;
 
     public String generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
@@ -105,7 +110,11 @@ public class DownloadServices {
 
     private void validatePassword(RedisManager redisManager, String enclosureId, String password) throws Exception {
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        if (!(password != null && passwordRedis != null && password.equals(passwordRedis))) {
+        String passwordHashed = "";
+        if (!StringUtils.isEmpty(password)) {
+            passwordHashed = passwordHasherServices.calculatePasswordHashed(password);
+        }
+        if (!(password != null && passwordRedis != null && passwordHashed.equals(passwordRedis))) {
             throw new UnauthorizedAccessException("accès interdit");
         }
     }
