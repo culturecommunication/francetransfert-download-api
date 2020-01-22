@@ -7,13 +7,19 @@ import fr.gouv.culture.francetransfert.application.security.token.JwtRequest;
 import fr.gouv.culture.francetransfert.application.security.token.JwtToken;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.Date;
@@ -86,23 +92,32 @@ public class TokenService {
 
     //for retrieveing any information from token we will need the secret key
     private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(getKey()).parseClaimsJws(token).getBody();
+        try {
+			return Jwts.parser().setSigningKey(getKey()).parseClaimsJws(token).getBody();
+		} catch (SignatureException | ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
+				| IllegalArgumentException | IOException e) {
+			throw new DownloadException("Erreur Token");
+		}
     }
 
     /**
      * Create Key
      * @param
      * @return
+     * @throws IOException 
      */
-    public Key getKey() {
-        try {
-            FileInputStream in = new FileInputStream(keyPath);
+    public Key getKey() throws IOException {
+    	FileInputStream in = null;
+    	try {
+            in = new FileInputStream(keyPath);
             KeyStore ks = KeyStore.getInstance("jceks");
             ks.load(in, (storePass).toCharArray());
             return ks.getKey(alias, keyPass.toCharArray());
         } catch (Exception var5) {
             throw new DownloadException("access denied");
-        }
+        }finally {
+			in.close();
+		}
     }
 
     //check if the token has expired

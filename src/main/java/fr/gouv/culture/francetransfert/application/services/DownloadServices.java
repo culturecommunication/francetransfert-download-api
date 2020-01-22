@@ -1,16 +1,9 @@
 package fr.gouv.culture.francetransfert.application.services;
 
-import com.opengroup.mc.francetransfert.api.francetransfert_metaload_api.RedisManager;
-import com.opengroup.mc.francetransfert.api.francetransfert_metaload_api.enums.*;
-import com.opengroup.mc.francetransfert.api.francetransfert_metaload_api.utils.DateUtils;
-import com.opengroup.mc.francetransfert.api.francetransfert_metaload_api.utils.RedisUtils;
-import com.opengroup.mc.francetransfert.api.francetransfert_storage_api.StorageManager;
-import fr.gouv.culture.francetransfert.application.error.UnauthorizedAccessException;
-import fr.gouv.culture.francetransfert.application.resources.model.DirectoryRepresentation;
-import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
-import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
-import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
-import fr.gouv.culture.francetransfert.domain.utils.DownloadUtils;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +11,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import fr.gouv.culture.francetransfert.application.error.UnauthorizedAccessException;
+import fr.gouv.culture.francetransfert.application.resources.model.DirectoryRepresentation;
+import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
+import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
+import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.domain.utils.DownloadUtils;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.EnclosureKeysEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisKeysEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootDirKeysEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootFileKeysEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.DateUtils;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
+import fr.gouv.culture.francetransfert.francetransfert_storage_api.StorageManager;
 
 @Service
 public class DownloadServices {
