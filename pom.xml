@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.opengroup.mc.francetransfert.api</groupId>
+    <groupId>fr.gouv.culture.francetransfert</groupId>
     <artifactId>francetransfert-download-api</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <description>France Transfert Download API</description>
@@ -172,12 +172,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.opengroup.mc.francetransfert.api</groupId>
+            <groupId>fr.gouv.culture.francetransfert</groupId>
             <artifactId>francetransfert-metaload-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.opengroup.mc.francetransfert.api</groupId>
+            <groupId>fr.gouv.culture.francetransfert</groupId>
             <artifactId>francetransfert-storage-api</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
