@@ -183,6 +183,12 @@
             <version>1.1.1</version>
             <scope>runtime</scope>
         </dependency>
+        <!--    JSON TO OBJECT && OBJECT TO JSON    -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.6.2</version>
+        </dependency>
         <dependency>
             <groupId>fr.gouv.culture.francetransfert</groupId>
             <artifactId>francetransfert-metaload-api</artifactId>
