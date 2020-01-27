@@ -1,10 +1,10 @@
 package fr.gouv.culture.francetransfert.application.services;
 
 import com.google.gson.Gson;
-import com.opengroup.mc.francetransfert.api.francetransfert_metaload_api.RedisManager;
-import com.opengroup.mc.francetransfert.api.francetransfert_metaload_api.enums.RedisQueueEnum;
 import fr.gouv.culture.francetransfert.application.resources.model.rate.RateRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
