@@ -40,10 +40,15 @@ public class DownloadServices {
 
     public String generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
         RedisManager redisManager = RedisManager.getInstance();
-        validatePassword(redisManager, enclosureId, password);
-        String recipientMailD = DownloadUtils.base64Decoder(recipientMail);
-        validateDownloadAuthorization(redisManager, enclosureId, recipientMailD, recipientId);
-        downloadProgress(redisManager, enclosureId, recipientId);
+        try {
+            validatePassword(redisManager, enclosureId, password);
+            String recipientMailD = DownloadUtils.base64Decoder(recipientMail);
+            validateDownloadAuthorization(redisManager, enclosureId, recipientMailD, recipientId);
+            downloadProgress(redisManager, enclosureId, recipientId);
+
+        } catch (Exception e) {
+            throw new DownloadException("errors validation");
+        }
         return getDownloadUrl(redisManager, enclosureId);
     }
 
@@ -108,7 +113,7 @@ public class DownloadServices {
 
     private void validateRecipientId(RedisManager redisManager, String enclosureId, String recipientMail, String recipientId) throws Exception {
         String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
-        if (!recipientIdRedis.equals(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId))) {
+        if (!recipientIdRedis.equals(recipientId)) {
             throw new DownloadException("accès interdit");
         }
     }
