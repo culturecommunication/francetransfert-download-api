@@ -32,7 +32,7 @@ public class DownloadRessources {
                                                   @RequestParam("enclosure") String enclosureId,
                                                   @RequestParam("recipient") String recipientMail,
                                                   @RequestParam("token") String recipientId,
-                                                  @RequestParam("password") String password) throws Exception {
+                                                  @RequestParam(value = "password", required = false) String password) throws Exception {
         String downloadURL = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
         response.setStatus(HttpStatus.FOUND.value());
         response.setHeader("Location", downloadURL);
@@ -45,7 +45,7 @@ public class DownloadRessources {
                                                 @RequestParam("enclosure") String enclosureId,
                                                 @RequestParam("recipient") String recipientMailInBase64,
                                                 @RequestParam("token") String recipientId) throws Exception {
-        DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfo(enclosureId, recipientMailInBase64, recipientId);
+        DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfo(enclosureId, recipientId, recipientMailInBase64);
         response.setStatus(HttpStatus.OK.value());
         return downloadRepresentation;
     }
