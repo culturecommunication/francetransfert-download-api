@@ -35,6 +35,9 @@ public class DownloadServices {
     @Value("${enclosure.max.download}")
     private int maxDownload;
 
+    @Value("${bucket.prefix}")
+    private String bucketPrefix;
+
     @Autowired
     PasswordHasherServices passwordHasherServices;
 
@@ -74,8 +77,8 @@ public class DownloadServices {
 
     private String getDownloadUrl(RedisManager redisManager, String enclosureId) throws Exception {
         StorageManager storageManager = new StorageManager();
-        String bucketName = RedisUtils.getBucketName(redisManager, enclosureId);
-        String fileToDownload = enclosureId+".zip";
+        String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
+        String fileToDownload = storageManager.getZippedEnclosureName(enclosureId)+".zip";
         return storageManager.generateDownloadURL(bucketName, fileToDownload).toString();
     }
 
