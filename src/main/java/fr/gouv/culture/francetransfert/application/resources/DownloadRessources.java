@@ -1,7 +1,10 @@
 package fr.gouv.culture.francetransfert.application.resources;
 
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
+import fr.gouv.culture.francetransfert.application.resources.model.rate.RateRepresentation;
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
+import fr.gouv.culture.francetransfert.application.services.RateServices;
+import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -12,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 
 @CrossOrigin
 @RestController
@@ -24,6 +28,9 @@ public class DownloadRessources {
 
     @Autowired
     DownloadServices downloadServices;
+    
+    @Autowired
+    private RateServices rateServices;
 
 
     @GetMapping("/generate-download-url")
@@ -49,5 +56,12 @@ public class DownloadRessources {
         response.setStatus(HttpStatus.OK.value());
         return downloadRepresentation;
     }
+    
 
+    @RequestMapping(value = "/satisfaction", method = RequestMethod.POST)
+    @ApiOperation(httpMethod = "POST", value = "Rates the app on a scvale of 1 to 4")
+    public void createSatisfactionFT(HttpServletResponse response,
+                             @Valid @RequestBody RateRepresentation rateRepresentation) throws DownloadException {
+        rateServices.createSatisfactionFT(rateRepresentation);
+    }
 }
