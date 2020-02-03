@@ -101,6 +101,7 @@ public class DownloadServices {
     private LocalDate validateExpirationDate(RedisManager redisManager, String enclosureId) throws Exception {
         LocalDate expirationDate = DateUtils.convertStringToLocalDate(RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.EXPIRED_TIMESTAMP.getKey()));
         if (LocalDate.now().isAfter(expirationDate)) {
+            LOGGER.error("vous ne pouvez plus telecharger ces fichiers");
             throw new DownloadException("vous ne pouvez plus telecharger ces fichiers");
         }
         return expirationDate;
@@ -109,6 +110,7 @@ public class DownloadServices {
     private int validateNumberOfDownload(RedisManager redisManager, String recipientId) throws Exception {
         int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
         if (maxDownload < numberOfDownload) {
+            LOGGER.error("vous avez atteint le nombre maximum de telechargement");
             throw new DownloadException("vous avez atteint le nombre maximum de telechargement");
         }
         return numberOfDownload;
@@ -117,6 +119,7 @@ public class DownloadServices {
     private void validateRecipientId(RedisManager redisManager, String enclosureId, String recipientMail, String recipientId) throws Exception {
         String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
         if (!recipientIdRedis.equals(recipientId)) {
+            LOGGER.error("accès interdit");
             throw new DownloadException("accès interdit");
         }
     }
@@ -128,6 +131,7 @@ public class DownloadServices {
             passwordHashed = passwordHasherServices.calculatePasswordHashed(password);
         }
         if (!(password != null && passwordRedis != null && passwordHashed.equals(passwordRedis))) {
+            LOGGER.error("accès interdit");
             throw new UnauthorizedAccessException("accès interdit");
         }
     }
@@ -152,7 +156,8 @@ public class DownloadServices {
                         RootFileKeysEnum.SIZE.getKey()
                 );
             } catch (Exception e) {
-                throw new DownloadException("erreur de telechargement.");
+                LOGGER.error("download errors");
+                throw new DownloadException("download errors");
             }
             FileRepresentation rootFile = new FileRepresentation();
             rootFile.setName(rootFileName);
@@ -174,7 +179,8 @@ public class DownloadServices {
                         RootDirKeysEnum.TOTAL_SIZE.getKey()
                 );
             } catch (Exception e) {
-                throw new DownloadException("erreur de telechargement.");
+                LOGGER.error("download errors");
+                throw new DownloadException("download errors");
             }
             DirectoryRepresentation rootDir = new DirectoryRepresentation();
             rootDir.setName(rootDirName);
