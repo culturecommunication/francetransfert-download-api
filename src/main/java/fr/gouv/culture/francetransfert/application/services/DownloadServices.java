@@ -76,7 +76,7 @@ public class DownloadServices {
     }
 
     private String getDownloadUrl(RedisManager redisManager, String enclosureId) throws Exception {
-        StorageManager storageManager = new StorageManager();
+        StorageManager storageManager = StorageManager.getInstance();
         String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
         String fileToDownload = storageManager.getZippedEnclosureName(enclosureId)+".zip";
         return storageManager.generateDownloadURL(bucketName, fileToDownload).toString();
