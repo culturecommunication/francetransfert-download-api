@@ -62,7 +62,7 @@ public class DownloadServices {
         LocalDate expirationDate = validateDownloadAuthorization(redisManager, enclosureId, recipientMail, recipientId);
 
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
-        String senderMail = RedisUtils.getSenderEnclosure(redisManager, enclosureId);
+        String senderMail = RedisUtils.getEmailSenderEnclosure(redisManager, enclosureId);
         List<FileRepresentation> rootFiles = getRootFiles(redisManager, enclosureId);
         List<DirectoryRepresentation> rootDirs = getRootDirs(redisManager, enclosureId);
 
