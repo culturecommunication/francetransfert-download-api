@@ -45,7 +45,7 @@
     <repositories>
     <repository>
       <id>gitlab-nexus</id>
-      <url>${env.MVN_SNAPSHOTS}</url>
+      <url>${env.MVN_RELEASES}</url>
     </repository>
   </repositories>
   <distributionManagement>
