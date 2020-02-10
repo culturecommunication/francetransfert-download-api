@@ -29,7 +29,7 @@ sbapi:build:
   stage : build
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/target/francetransfert-download-api-*.jar
+    - $CI_PROJECT_DIR/target/*.jar
 
 # Sonar code quality analysis - note a full test coverage report through a jacoco.exec merged file in base project folder
 sbapi:sonar:
