@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 
 @Getter
@@ -15,7 +17,8 @@ public class RateRepresentation {
     @NotBlank
     private String mailAdress;
 
-    @NotBlank
+    @Min(0)
+    @Max(3)
     private int satisfaction;
 
     private String message;
