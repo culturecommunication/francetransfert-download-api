@@ -3,6 +3,7 @@ package fr.gouv.culture.francetransfert.application.services;
 import com.google.gson.Gson;
 import fr.gouv.culture.francetransfert.application.resources.model.rate.RateRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.domain.utils.DownloadUtils;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
 import org.slf4j.Logger;
@@ -19,6 +20,7 @@ public class RateServices {
                 LOGGER.error("error satisfaction services");
                 throw new DownloadException("error satisfaction services");
             }
+            rateRepresentation.setMailAdress(DownloadUtils.base64Decoder(rateRepresentation.getMailAdress()));
             String jsonInString = new Gson().toJson(rateRepresentation);
 
             RedisManager redisManager = RedisManager.getInstance();
