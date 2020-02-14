@@ -62,6 +62,7 @@ public class DownloadServices {
         LocalDate expirationDate = validateDownloadAuthorization(redisManager, enclosureId, recipientMail, recipientId);
 
         String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
+        String message = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.MESSAGE.getKey());
         String senderMail = RedisUtils.getEmailSenderEnclosure(redisManager, enclosureId);
         List<FileRepresentation> rootFiles = getRootFiles(redisManager, enclosureId);
         List<DirectoryRepresentation> rootDirs = getRootDirs(redisManager, enclosureId);
@@ -69,6 +70,7 @@ public class DownloadServices {
         return DownloadRepresentation.builder()
                 .validUntilDate(expirationDate)
                 .senderEmail(senderMail)
+                .message(message)
                 .rootFiles(rootFiles)
                 .rootDirs(rootDirs)
                 .withPassword(!StringUtils.isEmpty(passwordRedis))
@@ -109,7 +111,7 @@ public class DownloadServices {
 
     private int validateNumberOfDownload(RedisManager redisManager, String recipientId) throws Exception {
         int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
-        if (maxDownload < numberOfDownload) {
+        if (maxDownload <= numberOfDownload) {
             LOGGER.error("vous avez atteint le nombre maximum de telechargement");
             throw new DownloadException("vous avez atteint le nombre maximum de telechargement");
         }
