@@ -81,7 +81,8 @@ public class DownloadServices {
         StorageManager storageManager = StorageManager.getInstance();
         String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
         String fileToDownload = storageManager.getZippedEnclosureName(enclosureId)+".zip";
-        return storageManager.generateDownloadURL(bucketName, fileToDownload).toString();
+        int expireInMinutes = 2; // periode to exipre the generated URL
+        return storageManager.generateDownloadURL(bucketName, fileToDownload, expireInMinutes).toString();
     }
 
     /**
