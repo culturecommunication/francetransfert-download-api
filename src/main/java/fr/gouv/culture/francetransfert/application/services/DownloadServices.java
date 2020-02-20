@@ -164,7 +164,7 @@ public class DownloadServices {
             }
             FileRepresentation rootFile = new FileRepresentation();
             rootFile.setName(rootFileName);
-            rootFile.setSize(Integer.valueOf(size));
+            rootFile.setSize(Long.valueOf(size));
             rootFiles.add(rootFile);
             LOGGER.debug("root file: {}",rootFileName);
         });
@@ -187,7 +187,7 @@ public class DownloadServices {
             }
             DirectoryRepresentation rootDir = new DirectoryRepresentation();
             rootDir.setName(rootDirName);
-            rootDir.setTotalSize(Integer.valueOf(size));
+            rootDir.setTotalSize(Long.valueOf(size));
             rootDirs.add(rootDir);
             LOGGER.debug("root Dir: {}",rootDirName);
         });
