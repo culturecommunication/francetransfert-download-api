@@ -7,6 +7,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import fr.gouv.culture.francetransfert.domain.exceptions.BusinessDomainException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DomainNotFoundException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.UUID;
 
 /**
  * The type StarterKit exception handler.
@@ -33,44 +37,58 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
     protected ResponseEntity<Object> handleNoHandlerFoundException(
             NoHandlerFoundException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
 
-        return new ResponseEntity<>(new ApiError(status.value(), "NOT FOUND"), status);
+        return new ResponseEntity<>(new ApiError(status.value(), "NOT FOUND", "NOT_FOUND"), status);
     }
 
 
     @ExceptionHandler(DomainNotFoundException.class)
     public ResponseEntity<Object>  handleDomainNotFoundException(Exception ex)  {
-        LOGGER.error(ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND.value(),ex.getMessage()), HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(BusinessDomainException.class)
-    public ResponseEntity<Object>  handleBusinessDomainException(Exception ex)  {
-        LOGGER.error(ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        String errorId = RedisUtils.generateGUID();
+        LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), errorId, ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND.value(), ErrorEnum.TECHNICAL_ERROR.getValue(), errorId), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler({AccessDeniedException.class,JWTDecodeException.class,JWTCreationException.class, })
     public ResponseEntity<Object>  handleUnauthorizedException(Exception ex)  {
-        LOGGER.error(ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(),ex.getMessage()), HttpStatus.UNAUTHORIZED);
+        String errorId = RedisUtils.generateGUID();
+        LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), errorId, ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(), ErrorEnum.TECHNICAL_ERROR.getValue(), errorId), HttpStatus.UNAUTHORIZED);
+
+    }
+
+    @ExceptionHandler(BusinessDomainException.class)
+    public ResponseEntity<Object>  handleBusinessDomainException(Exception ex)  {
+         return generateError(ex, ErrorEnum.TECHNICAL_ERROR.getValue());
     }
 
     @ExceptionHandler(SdkClientException.class)
     public ResponseEntity<Object>  handleSdkClientException(Exception ex)  {
-        LOGGER.error(ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(DownloadException.class)
-    public ResponseEntity<Object>  handleDownloadException(Exception ex)  {
-        LOGGER.error(ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        return generateError(ex, ErrorEnum.TECHNICAL_ERROR.getValue());
     }
 
     @ExceptionHandler(UnauthorizedAccessException.class)
     public ResponseEntity<Object>  handleUnauthorizedAccessException(Exception ex)  {
-        LOGGER.error(ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(),ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+//        return generateError(ex, ErrorEnum.WRONG_PASSWORD.getValue());
+        LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), null, ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorEnum.WRONG_PASSWORD.getValue(), ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(ExpirationEnclosureException.class)
+    public ResponseEntity<Object>  handleExpirationEnclosureException(Exception ex)  {
+        LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), null, ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND.value(), ErrorEnum.TECHNICAL_ERROR.getValue(), ex.getMessage()), HttpStatus.NOT_FOUND);
+    }
+
+
+    @ExceptionHandler(DownloadException.class)
+    public ResponseEntity<Object>  handleDownloadException(DownloadException ex)  {
+        return generateError(ex, ex.getType());
+    }
+
+    private ResponseEntity<Object> generateError(Exception ex, String errorType) {
+        String errorId = UUID.randomUUID().toString();
+        LOGGER.error("Type: {} -- id: {} -- message: {}", errorType, errorId, ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.OK.value(), errorType, errorId), HttpStatus.OK);
     }
 
 }

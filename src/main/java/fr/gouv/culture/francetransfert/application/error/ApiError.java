@@ -17,7 +17,11 @@ public class ApiError {
      */
     private int statusCode;
     /**
-     * Api Message Error
+     * TYPE ERROR
      */
-    private String message;
+    private String Type;
+    /**
+     * ID ERROR
+     */
+    private String id;
 }
