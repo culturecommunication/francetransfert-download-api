@@ -1,5 +1,6 @@
 package fr.gouv.culture.francetransfert.application.resources;
 
+import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
 import fr.gouv.culture.francetransfert.application.resources.model.rate.RateRepresentation;
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
@@ -35,7 +36,7 @@ public class DownloadRessources {
 
     @GetMapping("/generate-download-url")
     @ApiOperation(httpMethod = "GET", value = "Generate download URL ")
-    public void generateDownloadUrlWithPassword(HttpServletResponse response,
+    public Download generateDownloadUrlWithPassword(HttpServletResponse response,
                                                   @RequestParam("enclosure") String enclosureId,
                                                   @RequestParam("recipient") String recipientMail,
                                                   @RequestParam("token") String recipientId,
@@ -43,9 +44,9 @@ public class DownloadRessources {
         LOGGER.info("===========================================================================================================================");
         LOGGER.info("=============================================== start generate download URL ===============================================");
         LOGGER.info("===========================================================================================================================");
-        String downloadURL = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
-        response.setStatus(HttpStatus.FOUND.value());
-        response.setHeader("Location", downloadURL);
+        Download downloadURL = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
+        response.setStatus(HttpStatus.OK.value());
+        return downloadURL;
     }
 
 

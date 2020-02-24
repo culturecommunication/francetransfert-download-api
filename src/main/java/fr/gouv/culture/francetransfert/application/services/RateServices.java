@@ -20,8 +20,9 @@ public class RateServices {
     public void createSatisfactionFT(RateRepresentation rateRepresentation) throws DownloadException {
         try {
             if (null == rateRepresentation) {
-                LOGGER.error("rateRepresentation is null");
-                throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), UUID.randomUUID().toString());
+                String uuid = UUID.randomUUID().toString();
+                LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+                throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
             }
             rateRepresentation.setMailAdress(DownloadUtils.base64Decoder(rateRepresentation.getMailAdress()));
             String jsonInString = new Gson().toJson(rateRepresentation);
@@ -29,7 +30,9 @@ public class RateServices {
             RedisManager redisManager = RedisManager.getInstance();
             redisManager.publishFT(RedisQueueEnum.SATISFACTION_QUEUE.getValue(), jsonInString);
         } catch (Exception e) {
-            throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), UUID.randomUUID().toString());
+            String uuid = UUID.randomUUID().toString();
+            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+            throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
     }
 }

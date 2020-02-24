@@ -1,5 +1,6 @@
 package fr.gouv.culture.francetransfert;
 
+import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import org.junit.*;
@@ -31,7 +32,7 @@ public class DownloadServiceTest {
         String recipientId = "8ffd72f0-4432-4e07-b247-362b1eb4vfrt";
         String password = "";
         //when
-        String downloadUrl = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
+        Download downloadUrl = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
         //then
         Assert.assertTrue(downloadUrl != null);
     }

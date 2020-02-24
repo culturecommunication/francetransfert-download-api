@@ -82,7 +82,8 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
 
     @ExceptionHandler(DownloadException.class)
     public ResponseEntity<Object>  handleDownloadException(DownloadException ex)  {
-        return generateError(ex, ex.getType());
+        LOGGER.error("Type: {} -- id: {} -- message: {}", ex.getType(), ex.getId(), ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.OK.value(), ex.getType(), ex.getId()), HttpStatus.OK);
     }
 
     private ResponseEntity<Object> generateError(Exception ex, String errorType) {
