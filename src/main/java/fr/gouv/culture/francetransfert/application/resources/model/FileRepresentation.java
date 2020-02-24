@@ -10,5 +10,5 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FileRepresentation extends DataRepresentation {
-    private int size;
+    private long size;
 }

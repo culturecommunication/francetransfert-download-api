@@ -10,5 +10,5 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DirectoryRepresentation extends DataRepresentation {
-    private int totalSize;
+    private long totalSize;
 }

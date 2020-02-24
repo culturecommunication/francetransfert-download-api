@@ -3,6 +3,7 @@ package fr.gouv.culture.francetransfert.application.security.services;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.security.token.JwtRequest;
 import fr.gouv.culture.francetransfert.application.security.token.JwtToken;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.util.Date;
+import java.util.UUID;
 
 
 @Service
@@ -81,7 +83,7 @@ public class TokenService {
     public JwtRequest validateTokenDownload(String token) {
         Claims claims = getAllClaimsFromToken(token);
         if (isTokenExpired(claims.getExpiration())) {
-            throw new DownloadException("Token expiré");
+            throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), UUID.randomUUID().toString());
         }
         JwtRequest jwtToken = new JwtRequest();
         jwtToken.setMailRecipient(claims.get("mailRecipient", String.class));
@@ -96,7 +98,7 @@ public class TokenService {
 			return Jwts.parser().setSigningKey(getKey()).parseClaimsJws(token).getBody();
 		} catch (SignatureException | ExpiredJwtException | UnsupportedJwtException | MalformedJwtException
 				| IllegalArgumentException | IOException e) {
-			throw new DownloadException("Erreur Token");
+            throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), UUID.randomUUID().toString());
 		}
     }
 
@@ -114,7 +116,7 @@ public class TokenService {
             ks.load(in, (storePass).toCharArray());
             return ks.getKey(alias, keyPass.toCharArray());
         } catch (Exception var5) {
-            throw new DownloadException("access denied");
+            throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), UUID.randomUUID().toString());
         }finally {
         	if(in != null) {
         		in.close();
