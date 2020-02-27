@@ -44,6 +44,9 @@ public class DownloadServices {
 
     @Autowired
     PasswordHasherServices passwordHasherServices;
+    
+    @Autowired
+    StorageManager storageManager;
 
     public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
             RedisManager redisManager = RedisManager.getInstance();
@@ -84,7 +87,7 @@ public class DownloadServices {
 
     private Download getDownloadUrl(RedisManager redisManager, String enclosureId) throws DownloadException {
         try {
-            StorageManager storageManager = StorageManager.getInstance();
+//            StorageManager storageManager = StorageManager.getInstance();
             String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
             String fileToDownload = storageManager.getZippedEnclosureName(enclosureId)+".zip";
             int expireInMinutes = 2; // periode to exipre the generated URL
