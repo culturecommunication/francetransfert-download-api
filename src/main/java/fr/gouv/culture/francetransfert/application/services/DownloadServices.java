@@ -47,9 +47,12 @@ public class DownloadServices {
     
     @Autowired
     StorageManager storageManager;
+    
+    @Autowired
+    RedisManager redisManager;
 
     public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId, String password) throws Exception {
-            RedisManager redisManager = RedisManager.getInstance();
+//            RedisManager redisManager = RedisManager.getInstance();
             validatePassword(redisManager, enclosureId, password);
             String recipientMailD = DownloadUtils.base64Decoder(recipientMail);
             validateDownloadAuthorization(redisManager, enclosureId, recipientMailD, recipientId);
@@ -59,7 +62,7 @@ public class DownloadServices {
 
     public DownloadRepresentation getDownloadInfo(String enclosureId, String recipientId, String recipientMailInBase64) throws Exception {
 
-        RedisManager redisManager = RedisManager.getInstance();
+//        RedisManager redisManager = RedisManager.getInstance();
         //validate Enclosure download right
         String recipientMail = DownloadUtils.base64Decoder(recipientMailInBase64);
         LocalDate expirationDate = validateDownloadAuthorization(redisManager, enclosureId, recipientMail, recipientId);
