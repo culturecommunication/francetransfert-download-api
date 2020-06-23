@@ -15,9 +15,11 @@
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <file>${filter.log.folder.path}/system.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rotate every day for log collection and archiving -->
-            <fileNamePattern>${filter.log.folder.path}/system.%d{yyyyMMdd}.log</fileNamePattern>
+            <fileNamePattern>${filter.log.folder.path}/system.log-%d{yyyyMMdd}.gz</fileNamePattern>
+            <maxHistory>${filter.log.history}</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -29,9 +31,11 @@
             <!-- only log problems, not debugging info -->
             <level>WARN</level>
         </filter>
+        <file>${filter.log.folder.path}/errors.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- rotate every day for log collection and archiving -->
-            <fileNamePattern>${filter.log.folder.path}/errors-log.%d{yyyyMMdd}.log</fileNamePattern>
+            <fileNamePattern>${filter.log.folder.path}/errors.log-%d{yyyyMMdd}.gz</fileNamePattern>
+            <maxHistory>${filter.log.history}</maxHistory>
         </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
