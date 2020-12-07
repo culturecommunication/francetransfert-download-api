@@ -1,7 +1,6 @@
 # Pipeline variables
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml -Dmaven.repo.local=.m2/repository --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
-  DEVELOP_BRANCH: "develop"
 
 # Cache policy - Share target folders between jobs - Note that key is related to a commit and is purged automatically after pipeline execution
 cache:
@@ -25,6 +24,8 @@ stages:
 # Build job with maven plugin execution policies define in parent pom
 sbapi:build:
   script:
+    - sed -i "s/storage.access.key=~/storage.access.key=${OSU_ACCESS_KEY}/g" src/main/resources/application-dev.properties
+    - sed -i "s/storage.secret.key=~/storage.secret.key=${OSU_SECRET_KEY}/g" src/main/resources/application-dev.properties
     - sh ./mvnw $MAVEN_CLI_OPTS -U package
   stage : build
   artifacts:
