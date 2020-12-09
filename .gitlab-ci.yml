@@ -27,10 +27,10 @@ sbapi:build:
     - sed -i "s/storage.access.key=~/storage.access.key=${OSU_ACCESS_KEY}/g" src/main/resources/application-dev.properties
     - sed -i "s/storage.secret.key=~/storage.secret.key=${OSU_SECRET_KEY}/g" src/main/resources/application-dev.properties
     - sh ./mvnw $MAVEN_CLI_OPTS -U package
-  stage : build
+  stage: build
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/target/*.jar
+      - $CI_PROJECT_DIR/target/*.jar
 
 # Sonar code quality analysis - note a full test coverage report through a jacoco.exec merged file in base project folder
 sbapi:sonar:
@@ -38,8 +38,7 @@ sbapi:sonar:
   dependencies:
     - sbapi:build
   only:
-    refs:
-      - develop
+    - develop
   script:
     - >
       mvn sonar:sonar
@@ -55,8 +54,7 @@ sbapi:sonar:master:
   dependencies:
     - sbapi:build
   only:
-    refs:
-      - master
+    - master
   script:
     - >
       mvn sonar:sonar
@@ -68,6 +66,9 @@ sbapi:sonar:master:
 docker-build:
   image: docker:stable
   stage: docker-build
+  only:
+    - develop
+    - sp4d
   services:
     - docker:18-dind
   script:
