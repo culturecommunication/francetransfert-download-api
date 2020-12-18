@@ -1,7 +1,6 @@
 # Pipeline variables
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml -Dmaven.repo.local=.m2/repository --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
-  DEVELOP_BRANCH: "develop"
 
 # Cache policy - Share target folders between jobs - Note that key is related to a commit and is purged automatically after pipeline execution
 cache:
@@ -25,11 +24,13 @@ stages:
 # Build job with maven plugin execution policies define in parent pom
 sbapi:build:
   script:
+    - sed -i "s/storage.access.key=~/storage.access.key=${OSU_ACCESS_KEY}/g" src/main/resources/application-dev.properties
+    - sed -i "s/storage.secret.key=~/storage.secret.key=${OSU_SECRET_KEY}/g" src/main/resources/application-dev.properties
     - sh ./mvnw $MAVEN_CLI_OPTS -U package
-  stage : build
+  stage: build
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/target/*.jar
+      - $CI_PROJECT_DIR/target/*.jar
 
 # Sonar code quality analysis - note a full test coverage report through a jacoco.exec merged file in base project folder
 sbapi:sonar:
@@ -37,8 +38,7 @@ sbapi:sonar:
   dependencies:
     - sbapi:build
   only:
-    refs:
-      - develop
+    - develop
   script:
     - >
       mvn sonar:sonar
@@ -54,8 +54,7 @@ sbapi:sonar:master:
   dependencies:
     - sbapi:build
   only:
-    refs:
-      - master
+    - master
   script:
     - >
       mvn sonar:sonar
@@ -67,6 +66,9 @@ sbapi:sonar:master:
 docker-build:
   image: docker:stable
   stage: docker-build
+  only:
+    - develop
+    - sp4d
   services:
     - docker:18-dind
   script:
