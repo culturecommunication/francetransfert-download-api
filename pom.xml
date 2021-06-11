@@ -190,6 +190,16 @@
             <version>2.6.2</version>
         </dependency>
         <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>6.4</version>
+        </dependency>
+        <dependency>
             <groupId>fr.gouv.culture.francetransfert</groupId>
             <artifactId>FTR-metaload-api</artifactId>
             <version>1.0.1-SNAPSHOT</version>
