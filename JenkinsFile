@@ -1,0 +1,67 @@
+properties([gitLabConnection('GitLab')])
+import Version
+def version = new Version()
+node {
+
+    println "============================"
+    println "Branche: " + env.BRANCH_NAME
+    println "============================"
+
+    // = Checkout
+    stage('Checkout') {
+        deleteDir()
+        checkout scm  
+        //env.GIT_COMMIT = sh(returnStdout: true, script: 'git rev-parse --short origin/'+env.BRANCH_NAME).trim()
+        //env.GIT_AUTHOR = sh(returnStdout: true, script: 'git --no-pager show -s --format=\'%an\' origin/'+env.BRANCH_NAME).trim()
+        //env.GIT_COMMIT_MESSAGE = sh(returnStdout: true, script: 'git log --format=format:%s -1').trim()
+    }
+    
+    /*
+    gitlabCommitStatus('Build')
+    {
+        stage('Build') {
+            sh 'mvn clean compile -Dmaven.test.skip=true'
+        }
+    }
+    
+    gitlabCommitStatus('Test')
+    {
+        stage('Test') {
+            sh 'mvn test'
+        }
+    }
+    
+    // = Package
+    gitlabCommitStatus('Package')
+    {
+        stage('Package') {
+            pom = readMavenPom file: 'pom.xml'
+            //Maven Package
+            if(!pom.version.contains("-SNAPSHOT")) {
+                sh 'mvn package deploy -Dmaven.test.skip=true  -DaltDeploymentRepository=culture::default::https://pic-culture.actontechnology.com/nexus/repository/culture-release/'
+            } else {
+                sh 'mvn package deploy -Dmaven.test.skip=true  -DaltDeploymentRepository=culture::default::https://pic-culture.actontechnology.com/nexus/repository/culture-snapshot/'
+            }
+        }
+    } 
+    */
+    
+    // = Deploiement
+    gitlabCommitStatus('Deploy')
+    {
+        stage('Deploy'){
+        pom = readMavenPom file: 'pom.xml'
+        version.updateVersionGit('app_download_api_version',pom.version,'recette')
+        }
+
+                stage ('Ansible') {
+                build job: 'deployement', wait: false, parameters: [
+                booleanParam(name: 'INFRA', value: false),
+                string(name: 'ENVIRONNEMENT', value: "recette"),
+                ]
+        }
+
+    }
+    
+}
+
