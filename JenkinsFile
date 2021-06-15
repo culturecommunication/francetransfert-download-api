@@ -51,13 +51,12 @@ node {
     {
         stage('Deploy'){
         pom = readMavenPom file: 'pom.xml'
-        if(env.BRANCH_NAME.startsWith('develop')){
-                version.updateVersionGit('app_download_api_version',jsonObject["version"],'recette')
+            if(env.BRANCH_NAME.startsWith('develop')){
+                Version.updateVersionGit("app_download_api_version",pom.version,"recette")
             }
             if(env.BRANCH_NAME.startsWith('master')){
-                version.updateVersionGit('app_download_api_version',jsonObject["version"],'production')
+                Version.updateVersionGit("app_download_api_version",pom.version,"production")
             }
-
         }
 
                 stage ('Ansible') {
