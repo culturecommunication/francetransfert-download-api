@@ -8,7 +8,8 @@ import lombok.Getter;
 public enum ErrorEnum {
     TECHNICAL_ERROR("TECHNICAL_ERROR"),
     DOWNLOAD_LIMIT("DOWNLOAD_LIMIT"),
-    WRONG_PASSWORD("WRONG_PASSWORD");
+    WRONG_PASSWORD("WRONG_PASSWORD"),
+    WRONG_ENCLOSURE("WRONG_ENCLOSURE");
 
     private String value;
 }
