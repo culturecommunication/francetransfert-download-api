@@ -68,9 +68,9 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
 
     @ExceptionHandler(UnauthorizedAccessException.class)
     public ResponseEntity<Object>  handleUnauthorizedAccessException(Exception ex)  {
-//        return generateError(ex, ErrorEnum.WRONG_PASSWORD.getValue());
-        LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), null, ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.INTERNAL_SERVER_ERROR.value(), ErrorEnum.WRONG_PASSWORD.getValue(), ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+        String errorId = UUID.randomUUID().toString();
+        LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), errorId, ex.getMessage());
+        return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(), ErrorEnum.WRONG_PASSWORD.getValue(), ex.getMessage()), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(ExpirationEnclosureException.class)
