@@ -42,9 +42,7 @@ public class DownloadRessources {
                                                   @RequestParam("recipient") String recipientMail,
                                                   @RequestParam("token") String recipientId,
                                                   @RequestParam(value = "password", required = false) String password) throws Exception {
-        LOGGER.info("===========================================================================================================================");
-        LOGGER.info("=============================================== start generate download URL ===============================================");
-        LOGGER.info("===========================================================================================================================");
+        LOGGER.info("start generate download URL ");
         Download downloadURL = downloadServices.generateDownloadUrlWithPassword(enclosureId, recipientMail, recipientId, password);
         response.setStatus(HttpStatus.OK.value());
         return downloadURL;
@@ -55,11 +53,7 @@ public class DownloadRessources {
     public Download generateDownloadUrlWithPassword(HttpServletResponse response,
                                                     @RequestParam("enclosure") String enclosureId, @RequestParam("password") String password) throws UnauthorizedAccessException, Exception {
         LOGGER.info(
-                "===========================================================================================================================");
-        LOGGER.info(
-                "=============================================== start generate download URL ===============================================");
-        LOGGER.info(
-                "===========================================================================================================================");
+                "start generate download URL ");
         downloadServices.validatePublic(enclosureId);
         Download downloadURL = downloadServices.generatePublicDownload(enclosureId, password);
         response.setStatus(HttpStatus.OK.value());
@@ -73,9 +67,7 @@ public class DownloadRessources {
                                                 @RequestParam("enclosure") String enclosureId,
                                                 @RequestParam("recipient") String recipientMailInBase64,
                                                 @RequestParam("token") String recipientId) throws Exception {
-        LOGGER.info("===================================================================================================================");
-        LOGGER.info("=============================================== start donlowad info ===============================================");
-        LOGGER.info("===================================================================================================================");
+        LOGGER.info("start donlowad info ");
         DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfo(enclosureId, recipientId, recipientMailInBase64);
         response.setStatus(HttpStatus.OK.value());
         return downloadRepresentation;
@@ -86,9 +78,7 @@ public class DownloadRessources {
     @ApiOperation(httpMethod = "POST", value = "Rates the app on a scvale of 1 to 4")
     public void createSatisfactionFT(HttpServletResponse response,
                              @Valid @RequestBody RateRepresentation rateRepresentation) throws DownloadException {
-        LOGGER.info("==================================================================================================================");
-        LOGGER.info("=============================================== start Satisfaction ===============================================");
-        LOGGER.info("==================================================================================================================");
+        LOGGER.info("start Satisfaction ");
         rateServices.createSatisfactionFT(rateRepresentation);
     }
 
@@ -101,11 +91,7 @@ public class DownloadRessources {
     @GetMapping("/download-info-public")
     public DownloadRepresentation downloadInfoPublic(HttpServletResponse response,@RequestParam("enclosure") String enclosureId ) throws UnauthorizedAccessException,Exception {
         LOGGER.info(
-                "===================================================================================================================");
-        LOGGER.info(
-                "=============================================== start download info public ===============================================");
-        LOGGER.info(
-                "===================================================================================================================");
+                "start download info public ");
         downloadServices.validatePublic(enclosureId);
         DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfoPublic(enclosureId);
         response.setStatus(HttpStatus.OK.value());

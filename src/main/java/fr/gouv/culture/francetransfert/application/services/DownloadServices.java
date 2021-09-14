@@ -101,7 +101,7 @@ public class DownloadServices {
                     .withPassword(!StringUtils.isEmpty(passwordRedis)).build();
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
     }
@@ -115,7 +115,7 @@ public class DownloadServices {
             return DownloadRepresentation.builder().validUntilDate(expirationDate).rootFiles(rootFiles).rootDirs(rootDirs).build();
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
     }
@@ -132,7 +132,7 @@ public class DownloadServices {
             return Download.builder().downloadURL(downloadURL).build();
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
     }
@@ -179,12 +179,12 @@ public class DownloadServices {
             String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
             if (!recipientIdRedis.equals(recipientId)) {
                 String uuid = UUID.randomUUID().toString();
-                LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+                LOGGER.error("Type: {} -- id: {} -- message : ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, "recipient id send not equals to Redis recipient id for this enclosure");
                 throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
             }
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
     }
@@ -199,7 +199,7 @@ public class DownloadServices {
             passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
 
@@ -219,7 +219,7 @@ public class DownloadServices {
             redisManager.rpush(RedisQueueEnum.DOWNLOAD_QUEUE.getValue(), downloadQueueValue);
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
     }
@@ -236,7 +236,7 @@ public class DownloadServices {
                         RootFileKeysEnum.SIZE.getKey());
             } catch (Exception e) {
                 String uuid = UUID.randomUUID().toString();
-                LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+    			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
                 throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
             }
             FileRepresentation rootFile = new FileRepresentation();
@@ -259,7 +259,7 @@ public class DownloadServices {
                         RootDirKeysEnum.TOTAL_SIZE.getKey());
             } catch (Exception e) {
                 String uuid = UUID.randomUUID().toString();
-                LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+    			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
                 throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
             }
             DirectoryRepresentation rootDir = new DirectoryRepresentation();
@@ -287,7 +287,7 @@ public class DownloadServices {
                 LOGGER.error("Type: {} -- id: {} -- Message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, "Invalid Token");
                 throw new UnauthorizedAccessException("Invalid Token");
             }
-        }else {
+        } else {
             String uuid = UUID.randomUUID().toString();
             LOGGER.error("Type: {} -- id: {} -- Message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, "Invalid Token");
             throw new UnauthorizedAccessException("Invalid Token");
