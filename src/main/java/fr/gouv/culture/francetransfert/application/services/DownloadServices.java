@@ -227,7 +227,7 @@ public class DownloadServices {
 					throw new MaxTryException("Nombre d'essais maximum atteint");
 				}
 			}
-			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry);
+			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry+1);
 		} else {
 			if (passwordCountTry < maxPasswordTry) {
 				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId);
