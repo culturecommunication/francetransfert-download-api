@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
+import fr.gouv.culture.francetransfert.application.error.MaxTryException;
 import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
 import org.slf4j.Logger;
@@ -32,6 +33,8 @@ import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisU
 import fr.gouv.culture.francetransfert.francetransfert_storage_api.StorageManager;
 import fr.gouv.culture.francetransfert.utils.Base64CryptoService;
 
+import javax.validation.constraints.Max;
+
 @Service
 public class DownloadServices {
 
@@ -39,6 +42,9 @@ public class DownloadServices {
 
     @Value("${enclosure.max.download}")
     private int maxDownload;
+
+    @Value("${enclosure.max.password.try}")
+    private int maxPasswordTry;
 
     @Value("${bucket.prefix}")
     private String bucketPrefix;
@@ -49,22 +55,21 @@ public class DownloadServices {
     @Autowired
     RedisManager redisManager;
 
-
     @Autowired
     Base64CryptoService base64CryptoService;
 
     public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId,
                                                     String password) throws Exception {
 //            RedisManager redisManager = RedisManager.getInstance();
-        validatePassword(redisManager, enclosureId, password);
+        validatePassword(redisManager, enclosureId, password, recipientId);
         String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
         validateDownloadAuthorization(redisManager, enclosureId, recipientMailD, recipientId);
         downloadProgress(redisManager, enclosureId, recipientId);
         return getDownloadUrl(redisManager, enclosureId);
     }
 
-    public Download generatePublicDownload(String enclosureId, String password){
-        validatePassword(redisManager, enclosureId, password);
+    public Download generatePublicDownload(String enclosureId, String password) throws Exception {
+        validatePassword(redisManager, enclosureId, password,"");
         RedisUtils.incrementNumberOfDownloadPublic(redisManager, enclosureId);
         return getDownloadUrl(redisManager, enclosureId);
     }
@@ -189,22 +194,40 @@ public class DownloadServices {
         }
     }
 
-    private void validatePassword(RedisManager redisManager, String enclosureId, String password)
-            throws DownloadException {
+    public void validatePassword(RedisManager redisManager, String enclosureId, String password, String recipientId)
+            throws Exception {
         String passwordRedis = "";
         String passwordUnHashed = "";
+        int passwordCountTry = 0;
+        Map<String, String> enclosureMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
+        Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
         try {
+            if(!publicLink) {
+                passwordCountTry = RedisUtils.getPasswordTryCountPerRecipient(redisManager, recipientId);
+            }
             passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
                     EnclosureKeysEnum.PASSWORD.getKey());
             passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
         } catch (Exception e) {
             String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
+            LOGGER.error("Error valiation:", e);
+            LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
             throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
         }
-
         if (!(password != null && passwordRedis != null && password.equals(passwordUnHashed))) {
-            throw new DownloadException(ErrorEnum.WRONG_PASSWORD.getValue(), null);
+            if(!publicLink){
+                RedisUtils.incrementNumberOfPasswordTry(redisManager,recipientId);
+                if(passwordCountTry > maxPasswordTry){
+                    throw new MaxTryException("Nombre d'essais maximum atteint");
+                }
+            }
+            throw new UnauthorizedAccessException(ErrorEnum.WRONG_PASSWORD.getValue());
+        }else{
+            if(passwordCountTry < maxPasswordTry){
+                RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId);
+            }else{
+                throw new MaxTryException("Nombre d'essais maximum atteint");
+            }
         }
     }
 

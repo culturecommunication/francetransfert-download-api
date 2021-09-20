@@ -9,6 +9,7 @@ public enum ErrorEnum {
     TECHNICAL_ERROR("TECHNICAL_ERROR"),
     DOWNLOAD_LIMIT("DOWNLOAD_LIMIT"),
     WRONG_PASSWORD("WRONG_PASSWORD"),
+    MAX_TRY("MAX_TRY"),
     WRONG_ENCLOSURE("WRONG_ENCLOSURE");
 
     private String value;

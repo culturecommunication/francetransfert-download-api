@@ -48,12 +48,11 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
         return new ResponseEntity<>(new ApiError(HttpStatus.NOT_FOUND.value(), ErrorEnum.TECHNICAL_ERROR.getValue(), errorId), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({AccessDeniedException.class,JWTDecodeException.class,JWTCreationException.class, })
+    @ExceptionHandler({AccessDeniedException.class,JWTDecodeException.class,JWTCreationException.class, MaxTryException.class})
     public ResponseEntity<Object>  handleUnauthorizedException(Exception ex)  {
         String errorId = RedisUtils.generateGUID();
         LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), errorId, ex.getMessage());
-        return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(), ErrorEnum.TECHNICAL_ERROR.getValue(), errorId), HttpStatus.UNAUTHORIZED);
-
+        return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), errorId), HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(BusinessDomainException.class)

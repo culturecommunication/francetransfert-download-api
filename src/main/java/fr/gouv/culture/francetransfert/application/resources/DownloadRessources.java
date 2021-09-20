@@ -3,9 +3,13 @@ package fr.gouv.culture.francetransfert.application.resources;
 import fr.gouv.culture.francetransfert.application.error.UnauthorizedAccessException;
 import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
+import fr.gouv.culture.francetransfert.application.resources.model.ValidatePasswordMetaData;
+import fr.gouv.culture.francetransfert.application.resources.model.ValidatePasswordRepresentation;
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import fr.gouv.culture.francetransfert.application.services.RateServices;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.model.RateRepresentation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -34,6 +38,9 @@ public class DownloadRessources {
     @Autowired
     private RateServices rateServices;
 
+    @Autowired
+    private RedisManager redisManager;
+
 
     @GetMapping("/generate-download-url")
     @ApiOperation(httpMethod = "GET", value = "Generate download URL ")
@@ -58,6 +65,21 @@ public class DownloadRessources {
         Download downloadURL = downloadServices.generatePublicDownload(enclosureId, password);
         response.setStatus(HttpStatus.OK.value());
         return downloadURL;
+    }
+
+    @PostMapping("/validate-password")
+    @ApiOperation(httpMethod = "POST", value = "Validate password")
+    public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData) throws Exception {
+        ValidatePasswordRepresentation representation = new ValidatePasswordRepresentation();
+        try{
+            downloadServices.validatePassword(redisManager,metaData.getEnclosureId(), metaData.getPassword(), metaData.getRecipientId());
+            representation.setValid(true);
+        }catch (Exception e){
+            representation.setValid(false);
+            representation.setPasswordTryCount(RedisUtils.getPasswordTryCountPerRecipient(redisManager, metaData.getRecipientId()));
+            throw e;
+        }
+        return representation;
     }
 
 
