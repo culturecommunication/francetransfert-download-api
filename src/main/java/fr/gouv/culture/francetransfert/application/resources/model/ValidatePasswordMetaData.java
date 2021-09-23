@@ -14,7 +14,7 @@ import javax.validation.constraints.NotBlank;
 public class ValidatePasswordMetaData {
     @NotBlank(message = "EnclosureId obligatoire")
     private String enclosureId;
-    @NotBlank(message = "RecipientId obligatoire")
+
     private String recipientId;
     @NotBlank(message = "Password obligatoire")
     private String password;
