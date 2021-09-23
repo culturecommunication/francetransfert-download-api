@@ -11,11 +11,11 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ValidatePasswordMetaData {
+public class DownloadPasswordMetaData {
     @NotBlank(message = "EnclosureId obligatoire")
-    private String enclosureId;
-
-    private String recipientId;
+    private String enclosure;
+    private String recipient;
     private String password;
+    private String token;
 
 }

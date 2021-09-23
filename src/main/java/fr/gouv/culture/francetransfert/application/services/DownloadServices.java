@@ -213,10 +213,14 @@ public class DownloadServices {
 			}
 			passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
-			passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
+			if (passwordRedis != null && !StringUtils.isEmpty(passwordRedis)) {
+				passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
+			} else {
+				return;
+			}
 		} catch (Exception e) {
 			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Error valiation:", e);
+			LOGGER.error("Error validation:", e);
 			LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
 			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
 		}
@@ -227,7 +231,7 @@ public class DownloadServices {
 					throw new MaxTryException("Nombre d'essais maximum atteint");
 				}
 			}
-			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry+1);
+			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry + 1);
 		} else {
 			if (passwordCountTry < maxPasswordTry) {
 				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId);
