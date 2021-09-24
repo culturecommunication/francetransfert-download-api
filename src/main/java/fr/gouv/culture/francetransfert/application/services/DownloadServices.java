@@ -209,7 +209,7 @@ public class DownloadServices {
 		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
 		try {
 			if (!publicLink) {
-				passwordCountTry = RedisUtils.getPasswordTryCountPerRecipient(redisManager, recipientId);
+				passwordCountTry = RedisUtils.getPasswordTryCountPerRecipient(redisManager, recipientId, enclosureId);
 			}
 			passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
@@ -226,7 +226,7 @@ public class DownloadServices {
 		}
 		if (!(password != null && passwordRedis != null && password.trim().equals(passwordUnHashed.trim()))) {
 			if (!publicLink) {
-				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId);
+				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId, enclosureId);
 				if (passwordCountTry > maxPasswordTry) {
 					throw new MaxTryException("Nombre d'essais maximum atteint");
 				}
@@ -234,7 +234,7 @@ public class DownloadServices {
 			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry + 1);
 		} else {
 			if (passwordCountTry < maxPasswordTry) {
-				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId);
+				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId, enclosureId);
 			} else {
 				throw new MaxTryException("Nombre d'essais maximum atteint");
 			}

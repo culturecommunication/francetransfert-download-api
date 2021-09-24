@@ -107,8 +107,8 @@ public class DownloadRessources {
 		} catch (Exception e) {
 			LOGGER.error("Exception while validatePassword : " + e.getMessage(), e);
 			representation.setValid(false);
-			representation.setPasswordTryCount(
-					RedisUtils.getPasswordTryCountPerRecipient(redisManager, metaData.getRecipientId()));
+			representation.setPasswordTryCount(RedisUtils.getPasswordTryCountPerRecipient(redisManager,
+					metaData.getRecipientId(), metaData.getEnclosureId()));
 			throw e;
 		}
 		return representation;
