@@ -224,7 +224,7 @@ public class DownloadServices {
 			LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
 			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
 		}
-		if (!(password != null && passwordRedis != null && password.equals(passwordUnHashed))) {
+		if (!(password != null && passwordRedis != null && password.trim().equals(passwordUnHashed.trim()))) {
 			if (!publicLink) {
 				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId);
 				if (passwordCountTry > maxPasswordTry) {
