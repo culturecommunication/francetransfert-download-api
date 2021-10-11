@@ -31,6 +31,15 @@ node {
         }
     }
     
+    gitlabCommitStatus('Quality')
+    {
+    	stage('SonarQube') {
+		    withSonarQubeEnv() {
+		    	sh "mvn sonar:sonar"
+		    }
+	    }
+    }
+    
     // = Package
     gitlabCommitStatus('Package')
     {
