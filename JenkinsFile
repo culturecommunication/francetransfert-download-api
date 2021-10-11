@@ -20,7 +20,7 @@ node {
     gitlabCommitStatus('Build')
     {
         stage('Build') {
-            sh 'mvn clean compile -Dmaven.test.skip=true'
+            sh 'mvn clean compile package -Dmaven.test.skip=true'
         }
     }
     
@@ -29,6 +29,13 @@ node {
         stage('Test') {
             sh 'mvn test'
         }
+    }
+    
+    gitlabCommitStatus('dependencyCheck')
+    {
+    	stage('dependencyCheck') {
+		    dependencyCheck additionalArguments: '--out="target" --scan="target" --format="HTML"', odcInstallation: 'DepCheck'
+	    }
     }
     
     gitlabCommitStatus('Quality')
