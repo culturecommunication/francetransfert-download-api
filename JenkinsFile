@@ -20,7 +20,7 @@ node {
     gitlabCommitStatus('Build')
     {
         stage('Build') {
-            sh 'mvn clean compile -Dmaven.test.skip=true'
+            sh 'mvn clean compile package -Dmaven.test.skip=true'
         }
     }
     
@@ -29,6 +29,22 @@ node {
         stage('Test') {
             sh 'mvn test'
         }
+    }
+    
+    gitlabCommitStatus('dependencyCheck')
+    {
+    	stage('dependencyCheck') {
+		    dependencyCheck additionalArguments: '--out="target" --scan="target" --format="HTML"', odcInstallation: 'DepCheck'
+	    }
+    }
+    
+    gitlabCommitStatus('Quality')
+    {
+    	stage('SonarQube') {
+		    withSonarQubeEnv() {
+		    	sh "mvn sonar:sonar"
+		    }
+	    }
     }
     
     // = Package
@@ -51,6 +67,9 @@ node {
     {
         stage('Deploy'){
         pom = readMavenPom file: 'pom.xml'
+            if(env.BRANCH_NAME.startsWith('demo')){
+                version.updateVersionGit("app_download_api_version",pom.version,"test")
+            }
             if(env.BRANCH_NAME.startsWith('develop')){
                 version.updateVersionGit("app_download_api_version",pom.version,"recette")
             }
@@ -64,6 +83,15 @@ node {
                         build job: 'deployement',wait:false, parameters: [
                         booleanParam(name: 'INFRA', value: false),
                         string(name: 'ENVIRONNEMENT', value: "recette"),
+                        string(name: 'GROUP', value: "back"),
+                        ]
+                    }
+
+                    if(env.BRANCH_NAME.startsWith('demo')){
+                        build job: 'deployement',wait:false, parameters: [
+                        booleanParam(name: 'INFRA', value: false),
+                        string(name: 'ENVIRONNEMENT', value: "test"),
+                        string(name: 'GROUP', value: "back"),
                         ]
                     }
 
@@ -71,6 +99,7 @@ node {
                         build job: 'deployement',wait:false, parameters: [
                         booleanParam(name: 'INFRA', value: false),
                         string(name: 'ENVIRONNEMENT', value: "production"),
+                        string(name: 'GROUP', value: "back"),
                         ]
                     }
 
