@@ -6,7 +6,7 @@
 
 	<groupId>fr.gouv.culture.francetransfert</groupId>
 	<artifactId>FTR-download-api</artifactId>
-	<version>1.3.0-SNAPSHOT</version>
+	<version>1.3.1-SNAPSHOT</version>
 	<description>France Transfert Download API</description>
 	<packaging>jar</packaging>
 
