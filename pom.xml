@@ -39,7 +39,7 @@
 		<maven-javadoc-plugin.version>2.10.2</maven-javadoc-plugin.version>
 		<maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
 		<jacoco-maven-plugin.version>0.8.3</jacoco-maven-plugin.version>
-		
+
 		<sonar.dependencyCheck.jsonReportPath>./target/dependency-check-report.json</sonar.dependencyCheck.jsonReportPath>
 		<sonar.dependencyCheck.xmlReportPath>./target/dependency-check-report.xml</sonar.dependencyCheck.xmlReportPath>
 		<sonar.dependencyCheck.htmlReportPath>./target/dependency-check-report.html</sonar.dependencyCheck.htmlReportPath>
@@ -172,6 +172,11 @@
 	</dependencies>
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>1.0-m5.1</version>
+			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
@@ -449,63 +454,63 @@
 					<version>1.0.0</version>
 				</dependency>
 
-                <dependency>
-                    <groupId>org.glassfish.jersey.media</groupId>
-                    <artifactId>jersey-media-json-jackson</artifactId>
-                    <version>${jersey-version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.glassfish.jersey.media</groupId>
-                    <artifactId>jersey-media-multipart</artifactId>
-                    <version>${jersey-version}</version>
-                </dependency>
+				<dependency>
+					<groupId>org.glassfish.jersey.media</groupId>
+					<artifactId>jersey-media-json-jackson</artifactId>
+					<version>${jersey-version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.glassfish.jersey.media</groupId>
+					<artifactId>jersey-media-multipart</artifactId>
+					<version>${jersey-version}</version>
+				</dependency>
 
-                <dependency>
-                    <groupId>joda-time</groupId>
-                    <artifactId>joda-time</artifactId>
-                    <version>${jodatime-version}</version>
-                </dependency>
-            </dependencies>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>io.swagger</groupId>
-                        <artifactId>swagger-codegen-maven-plugin</artifactId>
-                        <version>${swagger.codegen.version}</version>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>generate</goal>
-                                </goals>
-                                <configuration>
-                                    <verbose>true</verbose>
-                                    <inputSpec>${project.basedir}/src/main/resources/api-doc/swagger.json</inputSpec>
-                                    <language>java</language>
-                                    <configOptions>
-                                        <sourceFolder>src/gen/java/main</sourceFolder>
-                                        <useBeanValidation>true</useBeanValidation>
-                                        <dateLibrary>java8</dateLibrary>
-                                    </configOptions>
-                                    <output>
-                                        ${project.build.directory}/generated-sources/${project.artifactId}-client
-                                    </output>
-                                    <typeMappings>
-                                        <typeMapping>OffsetDateTime=Instant</typeMapping>
-                                    </typeMappings>
-                                    <importMappings>
-                                        <importMapping>java.time.OffsetDateTime=java.time.Instant</importMapping>
-                                    </importMappings>
-                                    <library>jersey2</library>
-                                    <apiPackage>${project.groupId}.client.handler</apiPackage>
-                                    <modelPackage>${project.groupId}.client.model</modelPackage>
-                                    <invokerPackage>${project.groupId}.client.handler</invokerPackage>
-                                    <modelNameSuffix>Client</modelNameSuffix>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+				<dependency>
+					<groupId>joda-time</groupId>
+					<artifactId>joda-time</artifactId>
+					<version>${jodatime-version}</version>
+				</dependency>
+			</dependencies>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>io.swagger</groupId>
+						<artifactId>swagger-codegen-maven-plugin</artifactId>
+						<version>${swagger.codegen.version}</version>
+						<executions>
+							<execution>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<verbose>true</verbose>
+									<inputSpec>${project.basedir}/src/main/resources/api-doc/swagger.json</inputSpec>
+									<language>java</language>
+									<configOptions>
+										<sourceFolder>src/gen/java/main</sourceFolder>
+										<useBeanValidation>true</useBeanValidation>
+										<dateLibrary>java8</dateLibrary>
+									</configOptions>
+									<output>
+										${project.build.directory}/generated-sources/${project.artifactId}-client
+									</output>
+									<typeMappings>
+										<typeMapping>OffsetDateTime=Instant</typeMapping>
+									</typeMappings>
+									<importMappings>
+										<importMapping>java.time.OffsetDateTime=java.time.Instant</importMapping>
+									</importMappings>
+									<library>jersey2</library>
+									<apiPackage>${project.groupId}.client.handler</apiPackage>
+									<modelPackage>${project.groupId}.client.model</modelPackage>
+									<invokerPackage>${project.groupId}.client.handler</invokerPackage>
+									<modelNameSuffix>Client</modelNameSuffix>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

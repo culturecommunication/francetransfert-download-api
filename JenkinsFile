@@ -34,7 +34,9 @@ node {
     gitlabCommitStatus('dependencyCheck')
     {
     	stage('dependencyCheck') {
-		    dependencyCheck additionalArguments: '--out="target" --scan="target" --format="HTML"', odcInstallation: 'DepCheck'
+            if (env.BRANCH_NAME == 'demo') {
+                dependencyCheck additionalArguments: '--out="target" --scan="target" --format="HTML"', odcInstallation: 'DepCheck'
+            }
 	    }
     }
     
@@ -42,7 +44,10 @@ node {
     {
     	stage('SonarQube') {
 		    withSonarQubeEnv() {
-		    	sh "mvn sonar:sonar"
+                sh "mvn sonar:sonar -Dsonar.branch.name=${env.BRANCH_NAME}"
+                if('MERGE' == env.gitlabActionType){
+                    sh "mvn sonar:sonar -Dsonar.pullrequest.branch=${env.gitlabSourceBranch} -Dsonar.pullrequest.key=${env.gitlabMergeRequestIid} -Dsonar.pullrequest.base=${env.gitlabTargetBranch}"
+                }
 		    }
 	    }
     }
