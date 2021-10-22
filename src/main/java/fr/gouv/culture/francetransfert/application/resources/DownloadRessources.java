@@ -27,7 +27,6 @@ import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import fr.gouv.culture.francetransfert.application.services.RateServices;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.model.RateRepresentation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -83,8 +82,6 @@ public class DownloadRessources {
 		} catch (Exception e) {
 			LOGGER.error("Exception while validatePassword : " + e.getMessage(), e);
 			representation.setValid(false);
-			representation.setPasswordTryCount(RedisUtils.getPasswordTryCountPerRecipient(redisManager,
-					metaData.getRecipientId(), metaData.getEnclosureId()));
 			throw e;
 		}
 		return representation;
