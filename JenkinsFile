@@ -60,7 +60,7 @@ node {
             //Maven Package
             if(!pom.version.contains("-SNAPSHOT")) {
                 sh 'mvn package deploy -Dmaven.test.skip=true  -DaltDeploymentRepository=culture::default::https://pic-culture.actontechnology.com/nexus/repository/culture-release/'
-            } else {
+            } else if(env.BRANCH_NAME.startsWith('demo') || env.BRANCH_NAME.startsWith('develop')) {
                 sh 'mvn package deploy -Dmaven.test.skip=true  -DaltDeploymentRepository=culture::default::https://pic-culture.actontechnology.com/nexus/repository/culture-snapshot/'
             }
         }
