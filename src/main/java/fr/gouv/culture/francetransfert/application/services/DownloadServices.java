@@ -1,6 +1,7 @@
 package fr.gouv.culture.francetransfert.application.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -236,7 +237,7 @@ public class DownloadServices {
 			if (!publicLink) {
 				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId, enclosureId);
 				redisManager.hsetString(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId),
-						RecipientKeysEnum.LAST_PASSWORD_TRY.getKey(), LocalDate.now().toString(), -1);
+						RecipientKeysEnum.LAST_PASSWORD_TRY.getKey(), LocalDateTime.now().toString(), -1);
 				if ((passwordCountTry + 1) >= maxPasswordTry) {
 					throw new MaxTryException("Nombre d'essais maximum atteint");
 				}
