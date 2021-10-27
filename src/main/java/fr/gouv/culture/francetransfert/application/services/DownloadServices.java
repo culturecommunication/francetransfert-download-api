@@ -1,17 +1,18 @@
 package fr.gouv.culture.francetransfert.application.services;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.error.MaxTryException;
@@ -25,6 +26,7 @@ import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.EnclosureKeysEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RecipientKeysEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisKeysEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootDirKeysEnum;
@@ -200,11 +202,18 @@ public class DownloadServices {
 		}
 	}
 
-	public void validatePassword(RedisManager redisManager, String enclosureId, String password, String recipientId)
-			throws Exception {
+	public void validatePassword(RedisManager redisManager, String enclosureId, String password,
+			String recipientEncodedMail) throws Exception {
 		String passwordRedis = "";
 		String passwordUnHashed = "";
 		int passwordCountTry = 0;
+		String recipientId = "";
+
+		if (StringUtils.isNotBlank(recipientEncodedMail)) {
+			String recipientMailD = base64CryptoService.base64Decoder(recipientEncodedMail);
+			recipientId = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMailD);
+		}
+
 		Map<String, String> enclosureMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
 		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
 		try {
@@ -227,13 +236,15 @@ public class DownloadServices {
 		if (!(password != null && passwordRedis != null && password.trim().equals(passwordUnHashed.trim()))) {
 			if (!publicLink) {
 				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId, enclosureId);
-				if (passwordCountTry > maxPasswordTry) {
+				redisManager.hsetString(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId),
+						RecipientKeysEnum.LAST_PASSWORD_TRY.getKey(), LocalDateTime.now().toString(), -1);
+				if ((passwordCountTry + 1) >= maxPasswordTry) {
 					throw new MaxTryException("Nombre d'essais maximum atteint");
 				}
 			}
 			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry + 1);
 		} else {
-			if (passwordCountTry < maxPasswordTry) {
+			if (passwordCountTry <= maxPasswordTry) {
 				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId, enclosureId);
 			} else {
 				throw new MaxTryException("Nombre d'essais maximum atteint");

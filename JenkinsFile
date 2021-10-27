@@ -34,7 +34,9 @@ node {
     gitlabCommitStatus('dependencyCheck')
     {
     	stage('dependencyCheck') {
-		    dependencyCheck additionalArguments: '--out="target" --scan="target" --format="HTML"', odcInstallation: 'DepCheck'
+            if (env.BRANCH_NAME == 'demo') {
+                dependencyCheck additionalArguments: '--out="target" --scan="target" --format="HTML"', odcInstallation: 'DepCheck'
+            }
 	    }
     }
     
@@ -42,7 +44,10 @@ node {
     {
     	stage('SonarQube') {
 		    withSonarQubeEnv() {
-		    	sh "mvn sonar:sonar"
+                sh "mvn sonar:sonar -Dsonar.branch.name=${env.BRANCH_NAME}"
+                if('MERGE' == env.gitlabActionType){
+                    sh "mvn sonar:sonar -Dsonar.pullrequest.branch=${env.gitlabSourceBranch} -Dsonar.pullrequest.key=${env.gitlabMergeRequestIid} -Dsonar.pullrequest.base=${env.gitlabTargetBranch}"
+                }
 		    }
 	    }
     }
@@ -55,7 +60,7 @@ node {
             //Maven Package
             if(!pom.version.contains("-SNAPSHOT")) {
                 sh 'mvn package deploy -Dmaven.test.skip=true  -DaltDeploymentRepository=culture::default::https://pic-culture.actontechnology.com/nexus/repository/culture-release/'
-            } else {
+            } else if(env.BRANCH_NAME.startsWith('demo') || env.BRANCH_NAME.startsWith('develop')) {
                 sh 'mvn package deploy -Dmaven.test.skip=true  -DaltDeploymentRepository=culture::default::https://pic-culture.actontechnology.com/nexus/repository/culture-snapshot/'
             }
         }
@@ -95,13 +100,13 @@ node {
                         ]
                     }
 
-                    if(env.BRANCH_NAME.startsWith('master')){
-                        build job: 'deployement',wait:false, parameters: [
-                        booleanParam(name: 'INFRA', value: false),
-                        string(name: 'ENVIRONNEMENT', value: "production"),
-                        string(name: 'GROUP', value: "back"),
-                        ]
-                    }
+                    // if(env.BRANCH_NAME.startsWith('master')){
+                    //     build job: 'deployement',wait:false, parameters: [
+                    //     booleanParam(name: 'INFRA', value: false),
+                    //     string(name: 'ENVIRONNEMENT', value: "production"),
+                    //     string(name: 'GROUP', value: "back"),
+                    //     ]
+                    // }
 
                 }
 

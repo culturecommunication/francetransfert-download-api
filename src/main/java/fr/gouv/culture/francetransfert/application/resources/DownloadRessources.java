@@ -27,7 +27,6 @@ import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import fr.gouv.culture.francetransfert.application.services.RateServices;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.model.RateRepresentation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -49,30 +48,6 @@ public class DownloadRessources {
 
 	@Autowired
 	private RedisManager redisManager;
-
-	@GetMapping("/generate-download-url")
-	@ApiOperation(httpMethod = "GET", value = "Generate download URL ")
-	public Download generateDownloadUrlWithPassword(HttpServletResponse response,
-			@RequestParam("enclosure") String enclosure, @RequestParam("recipient") String recipient,
-			@RequestParam("token") String token, @RequestParam(value = "password", required = false) String password)
-			throws Exception {
-		LOGGER.info("start generate download URL ");
-		Download downloadURL = downloadServices.generateDownloadUrlWithPassword(enclosure, recipient, token, password);
-		response.setStatus(HttpStatus.OK.value());
-		return downloadURL;
-	}
-
-	@GetMapping("/generate-download-url-public")
-	@ApiOperation(httpMethod = "GET", value = "Generate download URL ")
-	public Download generateDownloadUrlWithPassword(HttpServletResponse response,
-			@RequestParam("enclosure") String enclosure, @RequestParam("password") String password)
-			throws UnauthorizedAccessException, Exception {
-		LOGGER.info("start generate download URL ");
-		downloadServices.validatePublic(enclosure);
-		Download downloadURL = downloadServices.generatePublicDownload(enclosure, password);
-		response.setStatus(HttpStatus.OK.value());
-		return downloadURL;
-	}
 
 	@PostMapping("/generate-download-url")
 	@ApiOperation(httpMethod = "POST", value = "Generate download URL ")
@@ -107,8 +82,6 @@ public class DownloadRessources {
 		} catch (Exception e) {
 			LOGGER.error("Exception while validatePassword : " + e.getMessage(), e);
 			representation.setValid(false);
-			representation.setPasswordTryCount(RedisUtils.getPasswordTryCountPerRecipient(redisManager,
-					metaData.getRecipientId(), metaData.getEnclosureId()));
 			throw e;
 		}
 		return representation;
