@@ -23,7 +23,7 @@
 		<swagger.codegen.version>2.3.1</swagger.codegen.version>
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 		<jersey-version>2.25.1</jersey-version>
-		<jodatime-version>2.7</jodatime-version>
+		<jodatime-version>2.10.13</jodatime-version>
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
 		<java.jwt.version>3.7.0</java.jwt.version>
 		<jjwt.version>0.10.6</jjwt.version>
