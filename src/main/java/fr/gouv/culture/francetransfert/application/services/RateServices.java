@@ -33,7 +33,8 @@ public class RateServices {
 
 			if (null == rateRepresentation) {
 				String uuid = UUID.randomUUID().toString();
-				LOGGER.error("Type: {} -- id: {} -- message {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, "rateRepresentation is null");
+				LOGGER.error("Type: {} -- id: {} -- message {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
+						"rateRepresentation is null");
 				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
 			}
 
@@ -48,8 +49,9 @@ public class RateServices {
 
 		} catch (Exception e) {
 			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			LOGGER.error("Type: {} -- id: {} -- message {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(),
+					e);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 }

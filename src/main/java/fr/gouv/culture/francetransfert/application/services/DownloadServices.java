@@ -34,6 +34,7 @@ import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootFi
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.DateUtils;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.francetransfert_storage_api.StorageManager;
+import fr.gouv.culture.francetransfert.francetransfert_storage_api.Exception.StorageException;
 import fr.gouv.culture.francetransfert.utils.Base64CryptoService;
 
 @Service
@@ -110,7 +111,7 @@ public class DownloadServices {
 			String uuid = UUID.randomUUID().toString();
 			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 
@@ -125,7 +126,7 @@ public class DownloadServices {
 			String uuid = UUID.randomUUID().toString();
 			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 
@@ -138,11 +139,11 @@ public class DownloadServices {
 			String downloadURL = storageManager.generateDownloadURL(bucketName, fileToDownload, expireInMinutes)
 					.toString();
 			return Download.builder().downloadURL(downloadURL).build();
-		} catch (Exception e) {
+		} catch (StorageException | Exception e) {
 			String uuid = UUID.randomUUID().toString();
 			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 
@@ -198,7 +199,7 @@ public class DownloadServices {
 			String uuid = UUID.randomUUID().toString();
 			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 
@@ -231,7 +232,7 @@ public class DownloadServices {
 			String uuid = UUID.randomUUID().toString();
 			LOGGER.error("Error validation:", e);
 			LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 		if (!(password != null && passwordRedis != null && password.trim().equals(passwordUnHashed.trim()))) {
 			if (!publicLink) {
@@ -265,7 +266,7 @@ public class DownloadServices {
 			String uuid = UUID.randomUUID().toString();
 			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 
@@ -283,7 +284,7 @@ public class DownloadServices {
 				String uuid = UUID.randomUUID().toString();
 				LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 						e.getMessage(), e);
-				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 			}
 			FileRepresentation rootFile = new FileRepresentation();
 			rootFile.setName(rootFileName);
@@ -307,7 +308,7 @@ public class DownloadServices {
 				String uuid = UUID.randomUUID().toString();
 				LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
 						e.getMessage(), e);
-				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 			}
 			DirectoryRepresentation rootDir = new DirectoryRepresentation();
 			rootDir.setName(rootDirName);
