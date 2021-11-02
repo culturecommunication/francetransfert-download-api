@@ -18,7 +18,7 @@
 	<properties>
 		<!-- dependencies version -->
 		<swagger-annotations-version>1.6.3</swagger-annotations-version>
-		<swagger.codegen.version>2.3.1</swagger.codegen.version>
+		<swagger.codegen.version>2.4.23</swagger.codegen.version>
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 		<jersey-version>2.35</jersey-version>
 		<jodatime-version>2.10.13</jodatime-version>
