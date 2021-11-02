@@ -19,8 +19,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.amazonaws.SdkClientException;
-import com.auth0.jwt.exceptions.JWTCreationException;
-import com.auth0.jwt.exceptions.JWTDecodeException;
 
 import fr.gouv.culture.francetransfert.domain.exceptions.BusinessDomainException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DomainNotFoundException;
@@ -73,10 +71,9 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
 				HttpStatus.NOT_FOUND);
 	}
 
-	@ExceptionHandler({ AccessDeniedException.class, JWTDecodeException.class, JWTCreationException.class,
-			MaxTryException.class })
+	@ExceptionHandler({ AccessDeniedException.class, MaxTryException.class })
 	public ResponseEntity<Object> handleUnauthorizedException(Exception ex) {
-		LOGGER.error("Handle error type AccessDeniedException, JWTDecodeException or JWTCreationException : " + ex.getMessage(), ex);
+		LOGGER.error("Handle error type AccessDeniedException : " + ex.getMessage(), ex);
 		String errorId = RedisUtils.generateGUID();
 		LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), errorId,
 				ex.getMessage(), ex);
