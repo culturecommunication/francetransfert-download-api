@@ -21,8 +21,8 @@
 		<!-- dependencies version -->
 		<swagger-annotations-version>1.6.3</swagger-annotations-version>
 		<swagger.codegen.version>2.4.23</swagger.codegen.version>
-		<springfox-swagger.version>2.9.2</springfox-swagger.version>
-		<jersey-version>2.35</jersey-version>
+		<springfox-swagger.version>3.0.0</springfox-swagger.version>
+		<jersey-version>3.0.3</jersey-version>
 		<jodatime-version>2.10.13</jodatime-version>
 		<build-helper-maven-plugin.version>3.2.0</build-helper-maven-plugin.version>
 		<!-- java version -->
