@@ -22,7 +22,7 @@
 		<springfox-swagger.version>2.9.2</springfox-swagger.version>
 		<jersey-version>2.35</jersey-version>
 		<jodatime-version>2.10.13</jodatime-version>
-		<build-helper-maven-plugin.version>1.12</build-helper-maven-plugin.version>
+		<build-helper-maven-plugin.version>3.2.0</build-helper-maven-plugin.version>
 		<java.jwt.version>3.18.2</java.jwt.version>
 		<jjwt.version>0.11.2</jjwt.version>
 		<!-- java version -->
