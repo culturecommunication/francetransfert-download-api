@@ -1,5 +1,7 @@
 package fr.gouv.culture.francetransfert.application.resources;
 
+import java.io.UnsupportedEncodingException;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.error.UnauthorizedAccessException;
 import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadPasswordMetaData;
@@ -25,6 +28,8 @@ import fr.gouv.culture.francetransfert.application.resources.model.ValidatePassw
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import fr.gouv.culture.francetransfert.application.services.RateServices;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
+import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.exception.MetaloadException;
 import fr.gouv.culture.francetransfert.model.RateRepresentation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -46,7 +51,7 @@ public class DownloadRessources {
 	@PostMapping("/generate-download-url")
 	@ApiOperation(httpMethod = "POST", value = "Generate download URL ")
 	public Download generateDownloadUrlWithPassword(@RequestBody DownloadPasswordMetaData downloadMeta)
-			throws Exception {
+			throws ExpirationEnclosureException, UnsupportedEncodingException, MetaloadException {
 		LOGGER.info("start generate download URL ");
 		Download downloadURL = downloadServices.generateDownloadUrlWithPassword(downloadMeta.getEnclosure(),
 				downloadMeta.getRecipient(), downloadMeta.getToken(), downloadMeta.getPassword());
@@ -66,8 +71,7 @@ public class DownloadRessources {
 
 	@PostMapping("/validate-password")
 	@ApiOperation(httpMethod = "POST", value = "Validate password")
-	public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData)
-			throws Exception {
+	public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData) {
 		ValidatePasswordRepresentation representation = new ValidatePasswordRepresentation();
 		try {
 			downloadServices.validatePassword(metaData.getEnclosureId(), metaData.getPassword(),
@@ -75,7 +79,7 @@ public class DownloadRessources {
 			representation.setValid(true);
 		} catch (Exception e) {
 			representation.setValid(false);
-			throw e;
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), metaData.getEnclosureId(), e);
 		}
 		return representation;
 	}
@@ -84,7 +88,8 @@ public class DownloadRessources {
 	@ApiOperation(httpMethod = "GET", value = "Download Info without URL ")
 	public DownloadRepresentation downloadinfo(HttpServletResponse response,
 			@RequestParam("enclosure") String enclosure, @RequestParam("recipient") String recipient,
-			@RequestParam("token") String token) throws Exception {
+			@RequestParam("token") String token)
+			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException {
 		LOGGER.info("start donlowad info ");
 		DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfo(enclosure, token, recipient);
 		response.setStatus(HttpStatus.OK.value());

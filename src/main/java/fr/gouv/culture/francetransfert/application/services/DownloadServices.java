@@ -1,19 +1,12 @@
 package fr.gouv.culture.francetransfert.application.services;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -32,6 +25,7 @@ import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepre
 import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.exception.StatException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.EnclosureKeysEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RecipientKeysEnum;
@@ -69,8 +63,7 @@ public class DownloadServices {
 	Base64CryptoService base64CryptoService;
 
 	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId,
-			String password) throws Exception {
-//            RedisManager redisManager = RedisManager.getInstance();
+			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException {
 		validatePassword(enclosureId, password, recipientId);
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
 		validateDownloadAuthorization(enclosureId, recipientMailD, recipientId);
@@ -78,7 +71,8 @@ public class DownloadServices {
 		return getDownloadUrl(enclosureId);
 	}
 
-	public Download generatePublicDownload(String enclosureId, String password) throws Exception {
+	public Download generatePublicDownload(String enclosureId, String password)
+			throws MetaloadException, UnsupportedEncodingException {
 		validatePassword(enclosureId, password, "");
 		RedisUtils.incrementNumberOfDownloadPublic(redisManager, enclosureId);
 		return getDownloadUrl(enclosureId);
@@ -97,9 +91,8 @@ public class DownloadServices {
 	}
 
 	public DownloadRepresentation getDownloadInfo(String enclosureId, String recipientId, String recipientMailInBase64)
-			throws Exception {
+			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException {
 
-//        RedisManager redisManager = RedisManager.getInstance();
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
 		LocalDate expirationDate = validateDownloadAuthorization(enclosureId, recipientMail, recipientId);
@@ -123,7 +116,8 @@ public class DownloadServices {
 		}
 	}
 
-	public DownloadRepresentation getDownloadInfoPublic(String enclosureId) throws Exception {
+	public DownloadRepresentation getDownloadInfoPublic(String enclosureId)
+			throws ExpirationEnclosureException, MetaloadException {
 		LocalDate expirationDate = validateDownloadAuthorizationPublic(enclosureId);
 		try {
 			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
@@ -164,17 +158,19 @@ public class DownloadServices {
 	 * @param recipientMail
 	 * @param recipientId
 	 * @return enclosure expiration Date
-	 * @throws Exception
+	 * @throws MetaloadException
+	 * @throws ExpirationEnclosureException
 	 */
 	private LocalDate validateDownloadAuthorization(String enclosureId, String recipientMail, String recipientId)
-			throws Exception {
+			throws ExpirationEnclosureException, MetaloadException {
 		validateRecipientId(enclosureId, recipientMail, recipientId);
 		validateNumberOfDownload(recipientId);
 		LocalDate expirationDate = validateExpirationDate(enclosureId);
 		return expirationDate;
 	}
 
-	private LocalDate validateExpirationDate(String enclosureId) throws Exception {
+	private LocalDate validateExpirationDate(String enclosureId)
+			throws ExpirationEnclosureException, MetaloadException {
 		LocalDate expirationDate = DateUtils.convertStringToLocalDate(
 				RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.EXPIRED_TIMESTAMP.getKey()));
 		if (LocalDate.now().isAfter(expirationDate)) {
@@ -183,7 +179,7 @@ public class DownloadServices {
 		return expirationDate;
 	}
 
-	private int validateNumberOfDownload(String recipientId) throws Exception {
+	private int validateNumberOfDownload(String recipientId) throws MetaloadException {
 		int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
 		if (maxDownload <= numberOfDownload) {
 			String uuid = UUID.randomUUID().toString();
@@ -193,7 +189,7 @@ public class DownloadServices {
 		return numberOfDownload;
 	}
 
-	private void validateRecipientId(String enclosureId, String recipientMail, String recipientId) throws Exception {
+	private void validateRecipientId(String enclosureId, String recipientMail, String recipientId) {
 		try {
 			String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
 			if (!recipientIdRedis.equals(recipientId)) {
@@ -210,7 +206,8 @@ public class DownloadServices {
 		}
 	}
 
-	public void validatePassword(String enclosureId, String password, String recipientEncodedMail) throws Exception {
+	public void validatePassword(String enclosureId, String password, String recipientEncodedMail)
+			throws UnsupportedEncodingException, MetaloadException {
 		String passwordRedis = "";
 		String passwordUnHashed = "";
 		int passwordCountTry = 0;
@@ -254,9 +251,7 @@ public class DownloadServices {
 		}
 	}
 
-	private String getUnhashedPassword(String enclosureId)
-			throws MetaloadException, NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException,
-			InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+	private String getUnhashedPassword(String enclosureId) throws MetaloadException, StatException {
 		String passwordRedis;
 		String passwordUnHashed;
 		passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
@@ -356,7 +351,8 @@ public class DownloadServices {
 		}
 	}
 
-	private LocalDate validateDownloadAuthorizationPublic(String enclosureId) throws Exception {
+	private LocalDate validateDownloadAuthorizationPublic(String enclosureId)
+			throws ExpirationEnclosureException, MetaloadException {
 		LocalDate expirationDate = validateExpirationDate(enclosureId);
 		return expirationDate;
 	}
