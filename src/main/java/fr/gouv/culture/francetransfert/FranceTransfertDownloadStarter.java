@@ -20,6 +20,7 @@ import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.ApiKey;
 import springfox.documentation.service.Contact;
+import springfox.documentation.service.VendorExtension;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -76,7 +77,7 @@ public class FranceTransfertDownloadStarter extends WebSecurityConfigurerAdapter
 						env.getProperty("tool.swagger.api.contact.url"),
 						env.getProperty("tool.swagger.api.contact.email")),
 				env.getProperty("tool.swagger.api.contact.licence"),
-				env.getProperty("tool.swagger.api.contact.licence.url"), new ArrayList());
+				env.getProperty("tool.swagger.api.contact.licence.url"), new ArrayList<VendorExtension>());
 	}
 
 }
