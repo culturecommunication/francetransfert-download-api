@@ -49,8 +49,6 @@ public class RateServices {
 
 		} catch (Exception e) {
 			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(),
-					e);
 			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}

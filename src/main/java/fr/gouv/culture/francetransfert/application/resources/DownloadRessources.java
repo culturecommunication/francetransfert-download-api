@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,6 +35,7 @@ import fr.gouv.culture.francetransfert.model.RateRepresentation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api-private/download-module")
 @Api(value = "Download resources")
@@ -61,7 +63,7 @@ public class DownloadRessources {
 	@PostMapping("/generate-download-url-public")
 	@ApiOperation(httpMethod = "POST", value = "Generate download public URL ")
 	public Download generateDownloadPublicUrlWithPassword(@RequestBody DownloadPasswordMetaData downloadMeta)
-			throws UnauthorizedAccessException, Exception {
+			throws UnauthorizedAccessException, UnsupportedEncodingException, MetaloadException {
 		LOGGER.info("start generate download URL ");
 		downloadServices.validatePublic(downloadMeta.getEnclosure());
 		Download downloadURL = downloadServices.generatePublicDownload(downloadMeta.getEnclosure(),
@@ -113,7 +115,8 @@ public class DownloadRessources {
 
 	@GetMapping("/download-info-public")
 	public DownloadRepresentation downloadInfoPublic(HttpServletResponse response,
-			@RequestParam("enclosure") String enclosure) throws UnauthorizedAccessException, Exception {
+			@RequestParam("enclosure") String enclosure)
+			throws UnauthorizedAccessException, ExpirationEnclosureException, MetaloadException {
 		LOGGER.info("start download info public ");
 		downloadServices.validatePublic(enclosure);
 		DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfoPublic(enclosure);
