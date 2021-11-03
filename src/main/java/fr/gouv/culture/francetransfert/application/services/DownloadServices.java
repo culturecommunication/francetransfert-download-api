@@ -255,7 +255,6 @@ public class DownloadServices {
 
 	private List<FileRepresentation> getRootFiles(String enclosureId) throws DownloadException {
 		List<FileRepresentation> rootFiles = new ArrayList<>();
-		List<DirectoryRepresentation> rootDirs = new ArrayList<>();
 		redisManager.lrange(RedisKeysEnum.FT_ROOT_FILES.getKey(enclosureId), 0, -1).forEach(rootFileName -> {
 			String size = "";
 			String hashRootFile = RedisUtils.generateHashsha1(enclosureId + ":" + rootFileName);

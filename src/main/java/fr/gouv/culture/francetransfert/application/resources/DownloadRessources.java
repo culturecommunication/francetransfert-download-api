@@ -55,9 +55,8 @@ public class DownloadRessources {
 	public Download generateDownloadUrlWithPassword(@RequestBody DownloadPasswordMetaData downloadMeta)
 			throws ExpirationEnclosureException, UnsupportedEncodingException, MetaloadException {
 		LOGGER.info("start generate download URL ");
-		Download downloadURL = downloadServices.generateDownloadUrlWithPassword(downloadMeta.getEnclosure(),
+		return downloadServices.generateDownloadUrlWithPassword(downloadMeta.getEnclosure(),
 				downloadMeta.getRecipient(), downloadMeta.getToken(), downloadMeta.getPassword());
-		return downloadURL;
 	}
 
 	@PostMapping("/generate-download-url-public")
@@ -66,9 +65,7 @@ public class DownloadRessources {
 			throws UnauthorizedAccessException, UnsupportedEncodingException, MetaloadException {
 		LOGGER.info("start generate download URL ");
 		downloadServices.validatePublic(downloadMeta.getEnclosure());
-		Download downloadURL = downloadServices.generatePublicDownload(downloadMeta.getEnclosure(),
-				downloadMeta.getPassword());
-		return downloadURL;
+		return downloadServices.generatePublicDownload(downloadMeta.getEnclosure(), downloadMeta.getPassword());
 	}
 
 	@PostMapping("/validate-password")
