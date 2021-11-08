@@ -18,7 +18,7 @@ public class LoadDataOnStartUp {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LoadDataOnStartUp.class);
 
 	private static final String DEV = "DEV";
-	private static final String CONFIG_PATH_KEY = "spring.config.location";
+	private static final String CONFIG_PATH_KEY = "APP_CONF_PATH";
 
 	@Value("${environnement}")
 	private String environnement;
