@@ -26,7 +26,8 @@ public class LoadDataOnStartUp {
 	@EventListener(ApplicationReadyEvent.class)
 	public void appReady() {
 		LOGGER.info("ApplicationReadyEvent : " + environnement);
-		System.getProperties().forEach((key, value) -> LOGGER.info(key + ": " + value));
+		System.getProperties().forEach((key, value) -> LOGGER.info("Prop - " + key + ": " + value));
+		System.getenv().forEach((key, value) -> LOGGER.info("Env - " + key + ": " + value));
 		if (!DEV.equalsIgnoreCase(environnement) && StringUtils.isNotBlank(System.getProperty(CONFIG_PATH_KEY))) {
 			Path confPath = Paths.get(System.getProperty(CONFIG_PATH_KEY));
 			try {
