@@ -26,14 +26,13 @@ public class LoadDataOnStartUp {
 	@EventListener(ApplicationReadyEvent.class)
 	public void appReady() {
 		LOGGER.info("ApplicationReadyEvent : " + environnement);
-		System.getProperties().forEach((key, value) -> LOGGER.info("Prop - " + key + ": " + value));
-		System.getenv().forEach((key, value) -> LOGGER.info("Env - " + key + ": " + value));
-		if (!DEV.equalsIgnoreCase(environnement) && StringUtils.isNotBlank(System.getProperty(CONFIG_PATH_KEY))) {
-			Path confPath = Paths.get(System.getProperty(CONFIG_PATH_KEY));
+		if (!DEV.equalsIgnoreCase(environnement) && StringUtils.isNotBlank(System.getenv(CONFIG_PATH_KEY))) {
+			Path confPath = Paths.get(System.getenv(CONFIG_PATH_KEY));
 			try {
 				Files.deleteIfExists(confPath);
+				LOGGER.info("Deleting configuration file : " + System.getenv(CONFIG_PATH_KEY));
 			} catch (IOException e) {
-				LOGGER.error("Cannot delete configuration file : " + System.getProperty(CONFIG_PATH_KEY));
+				LOGGER.error("Cannot delete configuration file : " + System.getenv(CONFIG_PATH_KEY));
 			}
 		}
 	}
