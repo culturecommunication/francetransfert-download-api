@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +23,9 @@ public class LoadDataOnStartUp {
 	@Value("${environnement}")
 	private String environnement;
 
-	@EventListener(ApplicationReadyEvent.class)
+	@EventListener(ApplicationStartedEvent.class)
 	public void appReady() {
-		LOGGER.info("ApplicationReadyEvent : " + environnement);
+		LOGGER.info("ApplicationStartedEvent : " + environnement);
 		if (!DEV.equalsIgnoreCase(environnement) && StringUtils.isNotBlank(System.getenv(CONFIG_PATH_KEY))) {
 			Path confPath = Paths.get(System.getenv(CONFIG_PATH_KEY));
 			try {
