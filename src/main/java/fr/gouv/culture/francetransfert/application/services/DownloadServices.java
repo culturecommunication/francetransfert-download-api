@@ -25,6 +25,7 @@ import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepre
 import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.enums.TypeStat;
 import fr.gouv.culture.francetransfert.exception.StatException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.EnclosureKeysEnum;
@@ -68,6 +69,8 @@ public class DownloadServices {
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
 		validateDownloadAuthorization(enclosureId, recipientMailD, recipientId);
 		downloadProgress(enclosureId, recipientId);
+		String statMessage = TypeStat.DOWNLOAD + ";" + enclosureId + ";" + recipientMailD;
+		redisManager.publishFT(RedisQueueEnum.STAT_QUEUE.getValue(), statMessage);
 		return getDownloadUrl(enclosureId);
 	}
 
@@ -75,6 +78,8 @@ public class DownloadServices {
 			throws MetaloadException, UnsupportedEncodingException {
 		validatePassword(enclosureId, password, "");
 		RedisUtils.incrementNumberOfDownloadPublic(redisManager, enclosureId);
+		String statMessage = TypeStat.DOWNLOAD + ";" + enclosureId;
+		redisManager.publishFT(RedisQueueEnum.STAT_QUEUE.getValue(), statMessage);
 		return getDownloadUrl(enclosureId);
 	}
 
