@@ -111,7 +111,7 @@ public class DownloadServices {
 					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
 					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
 		} catch (Exception e) {
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
+			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
@@ -124,7 +124,7 @@ public class DownloadServices {
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).rootFiles(rootFiles)
 					.rootDirs(rootDirs).build();
 		} catch (Exception e) {
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
+			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
@@ -137,7 +137,7 @@ public class DownloadServices {
 					.toString();
 			return Download.builder().downloadURL(downloadURL).build();
 		} catch (Exception e) {
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
+			throw new DownloadException("Cannot get Download URL : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
@@ -188,7 +188,7 @@ public class DownloadServices {
 						enclosureId);
 			}
 		} catch (Exception e) {
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
+			throw new DownloadException("Error while validating recipient Id : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
@@ -254,7 +254,7 @@ public class DownloadServices {
 			String downloadQueueValue = enclosureId + ":" + recipientId;
 			redisManager.rpush(RedisQueueEnum.DOWNLOAD_QUEUE.getValue(), downloadQueueValue);
 		} catch (Exception e) {
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue() + " : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
