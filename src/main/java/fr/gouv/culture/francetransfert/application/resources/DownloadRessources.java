@@ -70,7 +70,7 @@ public class DownloadRessources {
 
 	@PostMapping("/validate-password")
 	@ApiOperation(httpMethod = "POST", value = "Validate password")
-	public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData) {
+	public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData) throws Exception {
 		ValidatePasswordRepresentation representation = new ValidatePasswordRepresentation();
 		try {
 			downloadServices.validatePassword(metaData.getEnclosureId(), metaData.getPassword(),
@@ -78,7 +78,7 @@ public class DownloadRessources {
 			representation.setValid(true);
 		} catch (Exception e) {
 			representation.setValid(false);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), metaData.getEnclosureId(), e);
+			throw e;
 		}
 		return representation;
 	}
