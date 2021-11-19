@@ -214,7 +214,7 @@ public class DownloadServices {
 			throw new DownloadException("Error Unhashing password", enclosureId, e);
 		}
 
-		if (!(password != null && passwordUnHashed != null && password.trim().equals(passwordUnHashed.trim()))) {
+		if (!(password != null && passwordUnHashed != null && password.equals(passwordUnHashed))) {
 			if (!publicLink) {
 				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId);
 				redisManager.hsetString(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId),
