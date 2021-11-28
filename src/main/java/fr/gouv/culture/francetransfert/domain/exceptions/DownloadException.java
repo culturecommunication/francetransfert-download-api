@@ -1,11 +1,19 @@
 package fr.gouv.culture.francetransfert.domain.exceptions;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@AllArgsConstructor
-@Getter
+@Data
 public class DownloadException extends RuntimeException {
-    private String type;
-    private String id;
+	private String id;
+
+	public DownloadException(String type, String id, Throwable ex) {
+		super(type, ex);
+		this.id = id;
+	}
+
+	public DownloadException(String type, String id) {
+		super(type);
+		this.id = id;
+	}
+
 }

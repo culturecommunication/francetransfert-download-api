@@ -1,5 +1,6 @@
 package fr.gouv.culture.francetransfert.application.services;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepre
 import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.enums.TypeStat;
+import fr.gouv.culture.francetransfert.exception.StatException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.EnclosureKeysEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RecipientKeysEnum;
@@ -31,6 +34,7 @@ import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisK
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootDirKeysEnum;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootFileKeysEnum;
+import fr.gouv.culture.francetransfert.francetransfert_metaload_api.exception.MetaloadException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.DateUtils;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.francetransfert_storage_api.StorageManager;
@@ -60,19 +64,23 @@ public class DownloadServices {
 	Base64CryptoService base64CryptoService;
 
 	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId,
-			String password) throws Exception {
-//            RedisManager redisManager = RedisManager.getInstance();
-		validatePassword(redisManager, enclosureId, password, recipientId);
+			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException {
+		validatePassword(enclosureId, password, recipientId);
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
-		validateDownloadAuthorization(redisManager, enclosureId, recipientMailD, recipientId);
-		downloadProgress(redisManager, enclosureId, recipientId);
-		return getDownloadUrl(redisManager, enclosureId);
+		validateDownloadAuthorization(enclosureId, recipientMailD, recipientId);
+		downloadProgress(enclosureId, recipientId);
+		String statMessage = TypeStat.DOWNLOAD + ";" + enclosureId + ";" + recipientMailD;
+		redisManager.publishFT(RedisQueueEnum.STAT_QUEUE.getValue(), statMessage);
+		return getDownloadUrl(enclosureId);
 	}
 
-	public Download generatePublicDownload(String enclosureId, String password) throws Exception {
-		validatePassword(redisManager, enclosureId, password, "");
+	public Download generatePublicDownload(String enclosureId, String password)
+			throws MetaloadException, UnsupportedEncodingException {
+		validatePassword(enclosureId, password, "");
 		RedisUtils.incrementNumberOfDownloadPublic(redisManager, enclosureId);
-		return getDownloadUrl(redisManager, enclosureId);
+		String statMessage = TypeStat.DOWNLOAD + ";" + enclosureId;
+		redisManager.publishFT(RedisQueueEnum.STAT_QUEUE.getValue(), statMessage);
+		return getDownloadUrl(enclosureId);
 	}
 
 	public String getNumberOfDownloadPublic(String enclosureId) {
@@ -80,58 +88,48 @@ public class DownloadServices {
 		if (enclosureMap != null) {
 			return enclosureMap.get(EnclosureKeysEnum.PUBLIC_DOWNLOAD_COUNT.getKey());
 		} else {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- Message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					"Invalid Token");
-			throw new DownloadException(ErrorEnum.WRONG_ENCLOSURE.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.WRONG_ENCLOSURE.getValue(), enclosureId);
 		}
 	}
 
 	public DownloadRepresentation getDownloadInfo(String enclosureId, String recipientId, String recipientMailInBase64)
-			throws Exception {
+			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException {
 
-//        RedisManager redisManager = RedisManager.getInstance();
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
-		LocalDate expirationDate = validateDownloadAuthorization(redisManager, enclosureId, recipientMail, recipientId);
+		LocalDate expirationDate = validateDownloadAuthorization(enclosureId, recipientMail, recipientId);
 		try {
 			String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
 			String message = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.MESSAGE.getKey());
 			String senderMail = RedisUtils.getEmailSenderEnclosure(redisManager, enclosureId);
-			List<FileRepresentation> rootFiles = getRootFiles(redisManager, enclosureId);
-			List<DirectoryRepresentation> rootDirs = getRootDirs(redisManager, enclosureId);
+			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
+			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
 					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
 					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
 		} catch (Exception e) {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
-	public DownloadRepresentation getDownloadInfoPublic(String enclosureId) throws Exception {
-		LocalDate expirationDate = validateDownloadAuthorizationPublic(redisManager, enclosureId);
+	public DownloadRepresentation getDownloadInfoPublic(String enclosureId)
+			throws ExpirationEnclosureException, MetaloadException {
+		LocalDate expirationDate = validateDownloadAuthorizationPublic(enclosureId);
 		try {
-			List<FileRepresentation> rootFiles = getRootFiles(redisManager, enclosureId);
-			List<DirectoryRepresentation> rootDirs = getRootDirs(redisManager, enclosureId);
+			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
+			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).rootFiles(rootFiles)
 					.rootDirs(rootDirs).build();
 		} catch (Exception e) {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
-	private Download getDownloadUrl(RedisManager redisManager, String enclosureId) throws DownloadException {
+	private Download getDownloadUrl(String enclosureId) throws DownloadException {
 		try {
-//            StorageManager storageManager = StorageManager.getInstance();
 			String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
 			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId) + ".zip";
 			int expireInMinutes = 2; // periode to exipre the generated URL
@@ -139,10 +137,7 @@ public class DownloadServices {
 					.toString();
 			return Download.builder().downloadURL(downloadURL).build();
 		} catch (Exception e) {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException("Cannot get Download URL : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
@@ -155,17 +150,19 @@ public class DownloadServices {
 	 * @param recipientMail
 	 * @param recipientId
 	 * @return enclosure expiration Date
-	 * @throws Exception
+	 * @throws MetaloadException
+	 * @throws ExpirationEnclosureException
 	 */
-	private LocalDate validateDownloadAuthorization(RedisManager redisManager, String enclosureId, String recipientMail,
-			String recipientId) throws Exception {
-		validateRecipientId(redisManager, enclosureId, recipientMail, recipientId);
-		validateNumberOfDownload(redisManager, recipientId);
-		LocalDate expirationDate = validateExpirationDate(redisManager, enclosureId);
+	private LocalDate validateDownloadAuthorization(String enclosureId, String recipientMail, String recipientId)
+			throws ExpirationEnclosureException, MetaloadException {
+		validateRecipientId(enclosureId, recipientMail, recipientId);
+		validateNumberOfDownload(recipientId);
+		LocalDate expirationDate = validateExpirationDate(enclosureId);
 		return expirationDate;
 	}
 
-	private LocalDate validateExpirationDate(RedisManager redisManager, String enclosureId) throws Exception {
+	private LocalDate validateExpirationDate(String enclosureId)
+			throws ExpirationEnclosureException, MetaloadException {
 		LocalDate expirationDate = DateUtils.convertStringToLocalDate(
 				RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.EXPIRED_TIMESTAMP.getKey()));
 		if (LocalDate.now().isAfter(expirationDate)) {
@@ -174,37 +171,29 @@ public class DownloadServices {
 		return expirationDate;
 	}
 
-	private int validateNumberOfDownload(RedisManager redisManager, String recipientId) throws Exception {
+	private int validateNumberOfDownload(String recipientId) throws MetaloadException {
 		int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
 		if (maxDownload <= numberOfDownload) {
 			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} ", ErrorEnum.DOWNLOAD_LIMIT.getValue(), uuid);
 			throw new DownloadException(ErrorEnum.DOWNLOAD_LIMIT.getValue(), uuid);
 		}
 		return numberOfDownload;
 	}
 
-	private void validateRecipientId(RedisManager redisManager, String enclosureId, String recipientMail,
-			String recipientId) throws Exception {
+	private void validateRecipientId(String enclosureId, String recipientMail, String recipientId) {
 		try {
 			String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
 			if (!recipientIdRedis.equals(recipientId)) {
-				String uuid = UUID.randomUUID().toString();
-				LOGGER.error("Type: {} -- id: {} -- message : ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-						"recipient id send not equals to Redis recipient id for this enclosure");
-				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+				throw new DownloadException("Recipient id send not equals to Redis recipient id for this enclosure",
+						enclosureId);
 			}
 		} catch (Exception e) {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException("Error while validating recipient Id : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
-	public void validatePassword(RedisManager redisManager, String enclosureId, String password,
-			String recipientEncodedMail) throws Exception {
-		String passwordRedis = "";
+	public void validatePassword(String enclosureId, String password, String recipientEncodedMail)
+			throws UnsupportedEncodingException, MetaloadException {
 		String passwordUnHashed = "";
 		int passwordCountTry = 0;
 		String recipientId = "";
@@ -218,42 +207,45 @@ public class DownloadServices {
 		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
 		try {
 			if (!publicLink) {
-				passwordCountTry = RedisUtils.getPasswordTryCountPerRecipient(redisManager, recipientId, enclosureId);
+				passwordCountTry = RedisUtils.getPasswordTryCountPerRecipient(redisManager, recipientId);
 			}
-			passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
-					EnclosureKeysEnum.PASSWORD.getKey());
-			if (passwordRedis != null && !StringUtils.isEmpty(passwordRedis)) {
-				passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
-			} else {
-				return;
-			}
+			passwordUnHashed = getUnhashedPassword(enclosureId);
 		} catch (Exception e) {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Error validation:", e);
-			LOGGER.error("Type: {} -- id: {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException("Error Unhashing password", enclosureId, e);
 		}
-		if (!(password != null && passwordRedis != null && password.trim().equals(passwordUnHashed.trim()))) {
+
+		if (!(password != null && passwordUnHashed != null && password.equals(passwordUnHashed))) {
 			if (!publicLink) {
-				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId, enclosureId);
+				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId);
 				redisManager.hsetString(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId),
 						RecipientKeysEnum.LAST_PASSWORD_TRY.getKey(), LocalDateTime.now().toString(), -1);
 				if ((passwordCountTry + 1) >= maxPasswordTry) {
-					throw new MaxTryException("Nombre d'essais maximum atteint");
+					throw new MaxTryException("Nombre d'essais maximum atteint", enclosureId);
 				}
 			}
-			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), null, passwordCountTry + 1);
+			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), enclosureId, passwordCountTry + 1);
 		} else {
 			if (passwordCountTry <= maxPasswordTry) {
-				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId, enclosureId);
+				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId);
 			} else {
-				throw new MaxTryException("Nombre d'essais maximum atteint");
+				throw new MaxTryException("Nombre d'essais maximum atteint", enclosureId);
 			}
 		}
 	}
 
-	private void downloadProgress(RedisManager redisManager, String enclosureId, String recipientId)
-			throws DownloadException {
+	private String getUnhashedPassword(String enclosureId) throws MetaloadException, StatException {
+		String passwordRedis;
+		String passwordUnHashed;
+		passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
+		if (passwordRedis != null && !StringUtils.isEmpty(passwordRedis)) {
+			passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
+		} else {
+			throw new DownloadException("No Password for enclosure", enclosureId);
+		}
+		return passwordUnHashed;
+	}
+
+	private void downloadProgress(String enclosureId, String recipientId) throws DownloadException {
 		try {
 			// increment nb_download for this recipient
 			RedisUtils.incrementNumberOfDownloadsForRecipient(redisManager, recipientId);
@@ -262,17 +254,12 @@ public class DownloadServices {
 			String downloadQueueValue = enclosureId + ":" + recipientId;
 			redisManager.rpush(RedisQueueEnum.DOWNLOAD_QUEUE.getValue(), downloadQueueValue);
 		} catch (Exception e) {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue() + " : " + e.getMessage(), enclosureId, e);
 		}
 	}
 
-	private List<FileRepresentation> getRootFiles(RedisManager redisManager, String enclosureId)
-			throws DownloadException {
+	private List<FileRepresentation> getRootFiles(String enclosureId) throws DownloadException {
 		List<FileRepresentation> rootFiles = new ArrayList<>();
-		List<DirectoryRepresentation> rootDirs = new ArrayList<>();
 		redisManager.lrange(RedisKeysEnum.FT_ROOT_FILES.getKey(enclosureId), 0, -1).forEach(rootFileName -> {
 			String size = "";
 			String hashRootFile = RedisUtils.generateHashsha1(enclosureId + ":" + rootFileName);
@@ -280,10 +267,7 @@ public class DownloadServices {
 				size = redisManager.getHgetString(RedisKeysEnum.FT_ROOT_FILE.getKey(hashRootFile),
 						RootFileKeysEnum.SIZE.getKey());
 			} catch (Exception e) {
-				String uuid = UUID.randomUUID().toString();
-				LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-						e.getMessage(), e);
-				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
 			}
 			FileRepresentation rootFile = new FileRepresentation();
 			rootFile.setName(rootFileName);
@@ -294,8 +278,7 @@ public class DownloadServices {
 		return rootFiles;
 	}
 
-	private List<DirectoryRepresentation> getRootDirs(RedisManager redisManager, String enclosureId)
-			throws DownloadException {
+	private List<DirectoryRepresentation> getRootDirs(String enclosureId) throws DownloadException {
 		List<DirectoryRepresentation> rootDirs = new ArrayList<>();
 		redisManager.lrange(RedisKeysEnum.FT_ROOT_DIRS.getKey(enclosureId), 0, -1).forEach(rootDirName -> {
 			String size = "";
@@ -304,10 +287,7 @@ public class DownloadServices {
 				size = redisManager.getHgetString(RedisKeysEnum.FT_ROOT_DIR.getKey(hashRootDir),
 						RootDirKeysEnum.TOTAL_SIZE.getKey());
 			} catch (Exception e) {
-				String uuid = UUID.randomUUID().toString();
-				LOGGER.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-						e.getMessage(), e);
-				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), enclosureId, e);
 			}
 			DirectoryRepresentation rootDir = new DirectoryRepresentation();
 			rootDir.setName(rootDirName);
@@ -330,22 +310,16 @@ public class DownloadServices {
 		Map<String, String> tokenMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ADMIN_TOKEN.getKey(enclosureId));
 		if (tokenMap != null) {
 			if (!token.equals(tokenMap.get(EnclosureKeysEnum.TOKEN.getKey()))) {
-				String uuid = UUID.randomUUID().toString();
-				LOGGER.error("Type: {} -- id: {} -- Message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-						"Invalid Token");
 				throw new UnauthorizedAccessException("Invalid Token");
 			}
 		} else {
-			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- Message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid,
-					"Invalid Token");
 			throw new UnauthorizedAccessException("Invalid Token");
 		}
 	}
 
-	private LocalDate validateDownloadAuthorizationPublic(RedisManager redisManager, String enclosureId)
-			throws Exception {
-		LocalDate expirationDate = validateExpirationDate(redisManager, enclosureId);
+	private LocalDate validateDownloadAuthorizationPublic(String enclosureId)
+			throws ExpirationEnclosureException, MetaloadException {
+		LocalDate expirationDate = validateExpirationDate(enclosureId);
 		return expirationDate;
 	}
 }

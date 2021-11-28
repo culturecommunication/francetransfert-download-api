@@ -33,8 +33,7 @@ public class RateServices {
 
 			if (null == rateRepresentation) {
 				String uuid = UUID.randomUUID().toString();
-				LOGGER.error("Type: {} -- id: {} -- message {} ", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, "rateRepresentation is null");
-				throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+				throw new DownloadException("rateRepresentation is null", uuid);
 			}
 
 			String domain = base64CryptoService.base64Decoder(rateRepresentation.getMailAdress()).split("@")[1];
@@ -48,8 +47,7 @@ public class RateServices {
 
 		} catch (Exception e) {
 			String uuid = UUID.randomUUID().toString();
-			LOGGER.error("Type: {} -- id: {} -- message {}", ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e.getMessage(), e);
-			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid);
+			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
 		}
 	}
 }
