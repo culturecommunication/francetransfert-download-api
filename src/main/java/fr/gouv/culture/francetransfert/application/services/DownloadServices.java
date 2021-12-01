@@ -108,6 +108,7 @@ public class DownloadServices {
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
+					.recipientMail(recipientMail)
 					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
 					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
 		} catch (Exception e) {
@@ -144,8 +145,7 @@ public class DownloadServices {
 	/**
 	 * Method to validate download authorization : validate number of download,
 	 * validate expiration date and validate recipientId sended by the front
-	 * 
-	 * @param redisManager
+	 *
 	 * @param enclosureId
 	 * @param recipientMail
 	 * @param recipientId

@@ -14,6 +14,7 @@ public class DownloadRepresentation {
 
     private LocalDate validUntilDate;
     private String senderEmail;
+    private String recipientMail;
     private String message;
     private List<FileRepresentation> rootFiles;
     private List<DirectoryRepresentation> rootDirs;
