@@ -36,7 +36,7 @@ public class RateServices {
 				throw new DownloadException("rateRepresentation is null", uuid);
 			}
 
-			String domain = base64CryptoService.base64Decoder(rateRepresentation.getMailAdress()).split("@")[1];
+			String domain =rateRepresentation.getMailAdress().split("@")[1];
 			rateRepresentation.setDate(LocalDate.now());
 			rateRepresentation.setDomain(domain);
 			rateRepresentation.setHashMail(null);
