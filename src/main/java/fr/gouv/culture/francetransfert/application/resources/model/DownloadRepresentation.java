@@ -19,4 +19,5 @@ public class DownloadRepresentation {
     private List<FileRepresentation> rootFiles;
     private List<DirectoryRepresentation> rootDirs;
     private boolean withPassword;
+    private boolean pliExiste;
 }

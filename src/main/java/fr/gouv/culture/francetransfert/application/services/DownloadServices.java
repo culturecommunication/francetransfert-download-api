@@ -98,19 +98,27 @@ public class DownloadServices {
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
 		LocalDate expirationDate = validateDownloadAuthorization(enclosureId, recipientMail, recipientId);
+		Map<String, String> tokenMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ADMIN_TOKEN.getKey(enclosureId));
+		boolean downloadAvailable = true;
+
 		try {
+
+			if (tokenMap.size() == 0) {
+				downloadAvailable = false;
+			}
 			String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
 			String message = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.MESSAGE.getKey());
 			String senderMail = RedisUtils.getEmailSenderEnclosure(redisManager, enclosureId);
+
 			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
 					.recipientMail(recipientMail)
 					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
-					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
+					.withPassword(!StringUtils.isEmpty(passwordRedis)).pliExiste(downloadAvailable).build();
 		} catch (Exception e) {
 			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
