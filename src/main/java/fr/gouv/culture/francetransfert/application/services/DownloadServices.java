@@ -104,7 +104,7 @@ public class DownloadServices {
 		try {
 
 			if (tokenMap.size() == 0) {
-				downloadAvailable = false;
+				throw new DownloadException(ErrorEnum.DELETED_ENCLOSURE.getValue(), enclosureId);
 			}
 			String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
@@ -116,8 +116,7 @@ public class DownloadServices {
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
-					.recipientMail(recipientMail)
-					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
+					.recipientMail(recipientMail).message(message).rootFiles(rootFiles).rootDirs(rootDirs)
 					.withPassword(!StringUtils.isEmpty(passwordRedis)).pliExiste(downloadAvailable).build();
 		} catch (Exception e) {
 			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
