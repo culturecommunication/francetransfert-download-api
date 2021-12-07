@@ -98,14 +98,10 @@ public class DownloadServices {
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
 		LocalDate expirationDate = validateDownloadAuthorization(enclosureId, recipientMail, recipientId);
-		Map<String, String> tokenMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ADMIN_TOKEN.getKey(enclosureId));
-		boolean downloadAvailable = true;
+		checkDeletePlis(enclosureId);
 
 		try {
 
-			if (tokenMap.size() == 0) {
-				throw new DownloadException(ErrorEnum.DELETED_ENCLOSURE.getValue(), enclosureId);
-			}
 			String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
 			String message = RedisUtils.getEnclosureValue(redisManager, enclosureId,
@@ -117,7 +113,7 @@ public class DownloadServices {
 
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
 					.recipientMail(recipientMail).message(message).rootFiles(rootFiles).rootDirs(rootDirs)
-					.withPassword(!StringUtils.isEmpty(passwordRedis)).pliExiste(downloadAvailable).build();
+					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
 		} catch (Exception e) {
 			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
@@ -126,6 +122,7 @@ public class DownloadServices {
 	public DownloadRepresentation getDownloadInfoPublic(String enclosureId)
 			throws ExpirationEnclosureException, MetaloadException {
 		LocalDate expirationDate = validateDownloadAuthorizationPublic(enclosureId);
+		checkDeletePlis(enclosureId);
 		try {
 			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
@@ -133,6 +130,14 @@ public class DownloadServices {
 					.rootDirs(rootDirs).build();
 		} catch (Exception e) {
 			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
+		}
+	}
+
+	private void checkDeletePlis(String enclosureId) {
+		Map<String, String> tokenMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ADMIN_TOKEN.getKey(enclosureId));
+
+		if (tokenMap.size() == 0) {
+			throw new DownloadException(ErrorEnum.DELETED_ENCLOSURE.getValue(), enclosureId);
 		}
 	}
 
