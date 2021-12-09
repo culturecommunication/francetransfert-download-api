@@ -144,7 +144,7 @@ public class DownloadServices {
 	private Download getDownloadUrl(String enclosureId) throws DownloadException {
 		try {
 			String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
-			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId) + ".zip";
+			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
 			int expireInMinutes = 2; // periode to exipre the generated URL
 			String downloadURL = storageManager.generateDownloadURL(bucketName, fileToDownload, expireInMinutes)
 					.toString();
