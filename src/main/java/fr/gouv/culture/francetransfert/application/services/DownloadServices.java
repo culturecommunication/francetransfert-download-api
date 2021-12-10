@@ -98,17 +98,21 @@ public class DownloadServices {
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
 		LocalDate expirationDate = validateDownloadAuthorization(enclosureId, recipientMail, recipientId);
+		checkDeletePlis(enclosureId);
+
 		try {
+
 			String passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.PASSWORD.getKey());
 			String message = RedisUtils.getEnclosureValue(redisManager, enclosureId,
 					EnclosureKeysEnum.MESSAGE.getKey());
 			String senderMail = RedisUtils.getEmailSenderEnclosure(redisManager, enclosureId);
+
 			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 
 			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
-					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
+					.recipientMail(recipientMail).message(message).rootFiles(rootFiles).rootDirs(rootDirs)
 					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
 		} catch (Exception e) {
 			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
@@ -118,6 +122,7 @@ public class DownloadServices {
 	public DownloadRepresentation getDownloadInfoPublic(String enclosureId)
 			throws ExpirationEnclosureException, MetaloadException {
 		LocalDate expirationDate = validateDownloadAuthorizationPublic(enclosureId);
+		checkDeletePlis(enclosureId);
 		try {
 			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
@@ -128,10 +133,18 @@ public class DownloadServices {
 		}
 	}
 
+	private void checkDeletePlis(String enclosureId) {
+		Map<String, String> tokenMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ADMIN_TOKEN.getKey(enclosureId));
+
+		if (tokenMap.size() == 0) {
+			throw new DownloadException(ErrorEnum.DELETED_ENCLOSURE.getValue(), enclosureId);
+		}
+	}
+
 	private Download getDownloadUrl(String enclosureId) throws DownloadException {
 		try {
 			String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
-			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId) + ".zip";
+			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
 			int expireInMinutes = 2; // periode to exipre the generated URL
 			String downloadURL = storageManager.generateDownloadURL(bucketName, fileToDownload, expireInMinutes)
 					.toString();
@@ -144,8 +157,7 @@ public class DownloadServices {
 	/**
 	 * Method to validate download authorization : validate number of download,
 	 * validate expiration date and validate recipientId sended by the front
-	 * 
-	 * @param redisManager
+	 *
 	 * @param enclosureId
 	 * @param recipientMail
 	 * @param recipientId

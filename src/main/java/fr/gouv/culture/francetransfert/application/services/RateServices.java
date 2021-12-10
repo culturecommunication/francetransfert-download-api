@@ -3,6 +3,7 @@ package fr.gouv.culture.francetransfert.application.services;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +36,10 @@ public class RateServices {
 				String uuid = UUID.randomUUID().toString();
 				throw new DownloadException("rateRepresentation is null", uuid);
 			}
-
-			String domain = base64CryptoService.base64Decoder(rateRepresentation.getMailAdress()).split("@")[1];
+			String domain = "";
+			if (StringUtils.isNotBlank(rateRepresentation.getMailAdress())) {
+				domain = rateRepresentation.getMailAdress().split("@")[1];
+			}
 			rateRepresentation.setDate(LocalDate.now());
 			rateRepresentation.setDomain(domain);
 			rateRepresentation.setHashMail(null);
