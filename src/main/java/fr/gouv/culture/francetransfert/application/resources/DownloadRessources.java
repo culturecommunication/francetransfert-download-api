@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.error.UnauthorizedAccessException;
 import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadPasswordMetaData;
@@ -32,13 +31,13 @@ import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
 import fr.gouv.culture.francetransfert.francetransfert_metaload_api.exception.MetaloadException;
 import fr.gouv.culture.francetransfert.model.RateRepresentation;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/api-private/download-module")
-@Api(value = "Download resources")
+@Tag(name = "Download resources")
 @Validated
 public class DownloadRessources {
 
@@ -51,7 +50,7 @@ public class DownloadRessources {
 	private RateServices rateServices;
 
 	@PostMapping("/generate-download-url")
-	@ApiOperation(httpMethod = "POST", value = "Generate download URL ")
+	@Operation(method = "POST", description = "Generate download URL ")
 	public Download generateDownloadUrlWithPassword(@RequestBody DownloadPasswordMetaData downloadMeta)
 			throws ExpirationEnclosureException, UnsupportedEncodingException, MetaloadException {
 		LOGGER.info("start generate download URL ");
@@ -60,7 +59,7 @@ public class DownloadRessources {
 	}
 
 	@PostMapping("/generate-download-url-public")
-	@ApiOperation(httpMethod = "POST", value = "Generate download public URL ")
+	@Operation(method = "POST", description = "Generate download public URL ")
 	public Download generateDownloadPublicUrlWithPassword(@RequestBody DownloadPasswordMetaData downloadMeta)
 			throws UnauthorizedAccessException, UnsupportedEncodingException, MetaloadException {
 		LOGGER.info("start generate download URL ");
@@ -69,8 +68,9 @@ public class DownloadRessources {
 	}
 
 	@PostMapping("/validate-password")
-	@ApiOperation(httpMethod = "POST", value = "Validate password")
-	public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData) throws Exception {
+	@Operation(method = "POST", description = "Validate password")
+	public ValidatePasswordRepresentation validatePassword(@RequestBody @Valid ValidatePasswordMetaData metaData)
+			throws Exception {
 		ValidatePasswordRepresentation representation = new ValidatePasswordRepresentation();
 		try {
 			downloadServices.validatePassword(metaData.getEnclosureId(), metaData.getPassword(),
@@ -84,7 +84,7 @@ public class DownloadRessources {
 	}
 
 	@GetMapping("/download-info")
-	@ApiOperation(httpMethod = "GET", value = "Download Info without URL ")
+	@Operation(method = "GET", description = "Download Info without URL ")
 	public DownloadRepresentation downloadinfo(HttpServletResponse response,
 			@RequestParam("enclosure") String enclosure, @RequestParam("recipient") String recipient,
 			@RequestParam("token") String token)
@@ -96,7 +96,7 @@ public class DownloadRessources {
 	}
 
 	@RequestMapping(value = "/satisfaction", method = RequestMethod.POST)
-	@ApiOperation(httpMethod = "POST", value = "Rates the app on a scvale of 1 to 4")
+	@Operation(method = "POST", description = "Rates the app on a scvale of 1 to 4")
 	public void createSatisfactionFT(HttpServletResponse response,
 			@Valid @RequestBody RateRepresentation rateRepresentation) throws DownloadException {
 		LOGGER.info("start Satisfaction ");
