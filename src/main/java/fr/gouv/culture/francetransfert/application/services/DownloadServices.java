@@ -252,7 +252,7 @@ public class DownloadServices {
 		if (passwordRedis != null && !StringUtils.isEmpty(passwordRedis)) {
 			passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
 		} else {
-			throw new DownloadException("No Password for enclosure", enclosureId);
+			throw new DownloadException("No Password for enclosure {}", enclosureId);
 		}
 		return passwordUnHashed;
 	}
