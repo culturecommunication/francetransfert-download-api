@@ -97,10 +97,10 @@ public class DownloadRessources {
 
 	@RequestMapping(value = "/satisfaction", method = RequestMethod.POST)
 	@Operation(method = "POST", description = "Rates the app on a scvale of 1 to 4")
-	public void createSatisfactionFT(HttpServletResponse response,
+	public boolean createSatisfactionFT(HttpServletResponse response,
 			@Valid @RequestBody RateRepresentation rateRepresentation) throws DownloadException {
 		LOGGER.info("start Satisfaction ");
-		rateServices.createSatisfactionFT(rateRepresentation);
+		return rateServices.createSatisfactionFT(rateRepresentation);
 	}
 
 	@GetMapping("/download-count-public")
