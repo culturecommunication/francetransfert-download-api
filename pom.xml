@@ -16,7 +16,7 @@
 
 
 	<properties>
-		<log4j2.version>2.16.0</log4j2.version>
+		<log4j2.version>2.17.0</log4j2.version>
 		<!-- dependencies version -->
 		<swagger-annotations-version>1.6.3</swagger-annotations-version>
 		<swagger.codegen.version>2.4.24</swagger.codegen.version>
@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.5.13</version>
+			<version>1.6.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -96,7 +96,7 @@
 		<dependency>
 			<groupId>io.gatling.highcharts</groupId>
 			<artifactId>gatling-charts-highcharts</artifactId>
-			<version>3.7.2</version>
+			<version>3.7.3</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- JSON TO OBJECT && OBJECT TO JSON -->
@@ -108,7 +108,7 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>1.2.7</version>
+			<version>1.2.9</version>
 		</dependency>
 		<dependency>
 			<groupId>net.logstash.logback</groupId>
@@ -133,7 +133,7 @@
 		<dependency>
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
-			<version>3.7.0</version>
+			<version>4.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
