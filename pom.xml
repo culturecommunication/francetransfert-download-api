@@ -117,17 +117,7 @@
 		</dependency>
 		<dependency>
 			<groupId>fr.gouv.culture.francetransfert</groupId>
-			<artifactId>FTR-metaload-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>fr.gouv.culture.francetransfert</groupId>
-			<artifactId>FTR-storage-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>fr.gouv.culture.francetransfert</groupId>
-			<artifactId>FTR-stats-api</artifactId>
+			<artifactId>FTR-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>

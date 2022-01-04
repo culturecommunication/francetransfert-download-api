@@ -20,11 +20,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import com.amazonaws.SdkClientException;
 
+import fr.gouv.culture.francetransfert.core.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.domain.exceptions.BusinessDomainException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DomainNotFoundException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
 
 /**
  * The type StarterKit exception handler.

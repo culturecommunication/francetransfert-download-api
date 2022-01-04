@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
+import fr.gouv.culture.francetransfert.core.enums.RedisQueueEnum;
+import fr.gouv.culture.francetransfert.core.enums.TypeStat;
+import fr.gouv.culture.francetransfert.core.model.RateRepresentation;
+import fr.gouv.culture.francetransfert.core.services.RedisManager;
+import fr.gouv.culture.francetransfert.core.utils.Base64CryptoService;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
-import fr.gouv.culture.francetransfert.enums.TypeStat;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
-import fr.gouv.culture.francetransfert.model.RateRepresentation;
-import fr.gouv.culture.francetransfert.utils.Base64CryptoService;
 
 @Service
 public class RateServices {
