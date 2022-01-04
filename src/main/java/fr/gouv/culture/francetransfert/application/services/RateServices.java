@@ -29,7 +29,7 @@ public class RateServices {
 	@Autowired
 	Base64CryptoService base64CryptoService;
 
-	public void createSatisfactionFT(RateRepresentation rateRepresentation) throws DownloadException {
+	public boolean createSatisfactionFT(RateRepresentation rateRepresentation) throws DownloadException {
 		try {
 
 			if (null == rateRepresentation) {
@@ -47,7 +47,7 @@ public class RateServices {
 			rateRepresentation.setType(TypeStat.DOWNLOAD_SATISFACTION);
 			String jsonInString = new Gson().toJson(rateRepresentation);
 			redisManager.publishFT(RedisQueueEnum.SATISFACTION_QUEUE.getValue(), jsonInString);
-
+			return true;
 		} catch (Exception e) {
 			String uuid = UUID.randomUUID().toString();
 			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);
