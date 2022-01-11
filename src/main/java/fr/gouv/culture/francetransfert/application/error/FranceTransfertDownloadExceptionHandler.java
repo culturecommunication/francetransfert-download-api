@@ -71,7 +71,16 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
 				HttpStatus.NOT_FOUND);
 	}
 
-	@ExceptionHandler({ AccessDeniedException.class, MaxTryException.class })
+	@ExceptionHandler({ MaxTryException.class })
+	public ResponseEntity<Object> handleMaxTryException(MaxTryException ex) {
+		LOG.error("Handle error type MaxTryException : " + ex.getMessage(), ex);
+		LOG.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), ex.getId(),
+				ex.getMessage(), ex);
+		return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(), ex.getMessage(), ex.getId()),
+				HttpStatus.UNAUTHORIZED);
+	}
+
+	@ExceptionHandler({ AccessDeniedException.class })
 	public ResponseEntity<Object> handleUnauthorizedException(Exception ex) {
 		LOG.error("Handle error type AccessDeniedException : " + ex.getMessage(), ex);
 		String errorId = RedisUtils.generateGUID();
