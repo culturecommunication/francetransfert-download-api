@@ -12,12 +12,12 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
+import fr.gouv.culture.francetransfert.core.enums.RedisQueueEnum;
+import fr.gouv.culture.francetransfert.core.enums.TypeStat;
+import fr.gouv.culture.francetransfert.core.model.RateRepresentation;
+import fr.gouv.culture.francetransfert.core.services.RedisManager;
+import fr.gouv.culture.francetransfert.core.utils.Base64CryptoService;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
-import fr.gouv.culture.francetransfert.enums.TypeStat;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
-import fr.gouv.culture.francetransfert.model.RateRepresentation;
-import fr.gouv.culture.francetransfert.utils.Base64CryptoService;
 
 @Service
 public class RateServices {
@@ -29,7 +29,7 @@ public class RateServices {
 	@Autowired
 	Base64CryptoService base64CryptoService;
 
-	public void createSatisfactionFT(RateRepresentation rateRepresentation) throws DownloadException {
+	public boolean createSatisfactionFT(RateRepresentation rateRepresentation) throws DownloadException {
 		try {
 
 			if (null == rateRepresentation) {
@@ -47,7 +47,7 @@ public class RateServices {
 			rateRepresentation.setType(TypeStat.DOWNLOAD_SATISFACTION);
 			String jsonInString = new Gson().toJson(rateRepresentation);
 			redisManager.publishFT(RedisQueueEnum.SATISFACTION_QUEUE.getValue(), jsonInString);
-
+			return true;
 		} catch (Exception e) {
 			String uuid = UUID.randomUUID().toString();
 			throw new DownloadException(ErrorEnum.TECHNICAL_ERROR.getValue(), uuid, e);

@@ -27,10 +27,10 @@ import fr.gouv.culture.francetransfert.application.resources.model.ValidatePassw
 import fr.gouv.culture.francetransfert.application.resources.model.ValidatePasswordRepresentation;
 import fr.gouv.culture.francetransfert.application.services.DownloadServices;
 import fr.gouv.culture.francetransfert.application.services.RateServices;
+import fr.gouv.culture.francetransfert.core.exception.MetaloadException;
+import fr.gouv.culture.francetransfert.core.model.RateRepresentation;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.exception.MetaloadException;
-import fr.gouv.culture.francetransfert.model.RateRepresentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -97,10 +97,10 @@ public class DownloadRessources {
 
 	@RequestMapping(value = "/satisfaction", method = RequestMethod.POST)
 	@Operation(method = "POST", description = "Rates the app on a scvale of 1 to 4")
-	public void createSatisfactionFT(HttpServletResponse response,
+	public boolean createSatisfactionFT(HttpServletResponse response,
 			@Valid @RequestBody RateRepresentation rateRepresentation) throws DownloadException {
 		LOGGER.info("start Satisfaction ");
-		rateServices.createSatisfactionFT(rateRepresentation);
+		return rateServices.createSatisfactionFT(rateRepresentation);
 	}
 
 	@GetMapping("/download-count-public")

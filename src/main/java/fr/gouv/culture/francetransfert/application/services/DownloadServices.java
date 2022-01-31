@@ -23,22 +23,22 @@ import fr.gouv.culture.francetransfert.application.resources.model.DirectoryRepr
 import fr.gouv.culture.francetransfert.application.resources.model.Download;
 import fr.gouv.culture.francetransfert.application.resources.model.DownloadRepresentation;
 import fr.gouv.culture.francetransfert.application.resources.model.FileRepresentation;
+import fr.gouv.culture.francetransfert.core.enums.EnclosureKeysEnum;
+import fr.gouv.culture.francetransfert.core.enums.RecipientKeysEnum;
+import fr.gouv.culture.francetransfert.core.enums.RedisKeysEnum;
+import fr.gouv.culture.francetransfert.core.enums.RedisQueueEnum;
+import fr.gouv.culture.francetransfert.core.enums.RootDirKeysEnum;
+import fr.gouv.culture.francetransfert.core.enums.RootFileKeysEnum;
+import fr.gouv.culture.francetransfert.core.enums.TypeStat;
+import fr.gouv.culture.francetransfert.core.exception.MetaloadException;
+import fr.gouv.culture.francetransfert.core.exception.StatException;
+import fr.gouv.culture.francetransfert.core.services.RedisManager;
+import fr.gouv.culture.francetransfert.core.services.StorageManager;
+import fr.gouv.culture.francetransfert.core.utils.Base64CryptoService;
+import fr.gouv.culture.francetransfert.core.utils.DateUtils;
+import fr.gouv.culture.francetransfert.core.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
-import fr.gouv.culture.francetransfert.enums.TypeStat;
-import fr.gouv.culture.francetransfert.exception.StatException;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.RedisManager;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.EnclosureKeysEnum;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RecipientKeysEnum;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisKeysEnum;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RedisQueueEnum;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootDirKeysEnum;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.enums.RootFileKeysEnum;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.exception.MetaloadException;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.DateUtils;
-import fr.gouv.culture.francetransfert.francetransfert_metaload_api.utils.RedisUtils;
-import fr.gouv.culture.francetransfert.francetransfert_storage_api.StorageManager;
-import fr.gouv.culture.francetransfert.utils.Base64CryptoService;
 
 @Service
 public class DownloadServices {
