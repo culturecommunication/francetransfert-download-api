@@ -209,12 +209,15 @@ public class DownloadServices {
 		String passwordUnHashed = "";
 		int passwordCountTry = 0;
 		String recipientId = "";
+		Boolean recipientDeleted = false;
 
 		if (StringUtils.isNotBlank(recipientEncodedMail)) {
 			String recipientMailD = base64CryptoService.base64Decoder(recipientEncodedMail);
 			recipientId = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMailD);
-		}
+			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
 
+		}
+		if(!recipientDeleted){
 		Map<String, String> enclosureMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
 		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
 		try {
@@ -242,6 +245,9 @@ public class DownloadServices {
 			} else {
 				throw new MaxTryException("Nombre d'essais maximum atteint", enclosureId);
 			}
+		}
+		}else {
+			throw new UnauthorizedAccessException("Unauthorized");
 		}
 	}
 
