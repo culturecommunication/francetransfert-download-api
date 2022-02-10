@@ -196,7 +196,7 @@ public class DownloadServices {
 		try {
 			String recipientIdRedis = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMail);
 			if (!recipientIdRedis.equals(recipientId)) {
-				throw new DownloadException("Recipient id send not equals to Redis recipient id for this enclosure",
+				throw new DownloadException("NewRecipient id send not equals to Redis recipient id for this enclosure",
 						enclosureId);
 			}
 		} catch (Exception e) {
