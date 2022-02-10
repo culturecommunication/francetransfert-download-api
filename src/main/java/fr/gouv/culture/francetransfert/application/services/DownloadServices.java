@@ -167,10 +167,21 @@ public class DownloadServices {
 	 */
 	private LocalDate validateDownloadAuthorization(String enclosureId, String recipientMail, String recipientId)
 			throws ExpirationEnclosureException, MetaloadException {
+		Boolean recipientDeleted = false;
+
+		if (StringUtils.isNotBlank(recipientMail)) {
+			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
+
+		}
+		if(!recipientDeleted){
 		validateRecipientId(enclosureId, recipientMail, recipientId);
 		validateNumberOfDownload(recipientId);
 		LocalDate expirationDate = validateExpirationDate(enclosureId);
-		return expirationDate;
+			return expirationDate;
+		}
+
+		throw new ExpirationEnclosureException("Vous ne pouvez pas telecharger ces fichiers");
+
 	}
 
 	private LocalDate validateExpirationDate(String enclosureId)
@@ -214,10 +225,10 @@ public class DownloadServices {
 		if (StringUtils.isNotBlank(recipientEncodedMail)) {
 			String recipientMailD = base64CryptoService.base64Decoder(recipientEncodedMail);
 			recipientId = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMailD);
-			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
+			//recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
 
 		}
-		if(!recipientDeleted){
+		//if(!recipientDeleted){
 		Map<String, String> enclosureMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
 		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
 		try {
@@ -246,9 +257,9 @@ public class DownloadServices {
 				throw new MaxTryException("Nombre d'essais maximum atteint", enclosureId);
 			}
 		}
-		}else {
+		/*}else {
 			throw new UnauthorizedAccessException("Unauthorized");
-		}
+		}*/
 	}
 
 	private String getUnhashedPassword(String enclosureId) throws MetaloadException, StatException {
