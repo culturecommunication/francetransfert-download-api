@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import fr.gouv.culture.francetransfert.core.exception.StorageException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +66,7 @@ public class DownloadServices {
 	Base64CryptoService base64CryptoService;
 
 	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId,
-			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException {
+			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException, StorageException {
 		validatePassword(enclosureId, password, recipientId);
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
 		validateDownloadAuthorization(enclosureId, recipientMailD, recipientId);
@@ -93,7 +95,7 @@ public class DownloadServices {
 	}
 
 	public DownloadRepresentation getDownloadInfo(String enclosureId, String recipientId, String recipientMailInBase64)
-			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException {
+			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException, StorageException {
 
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
@@ -144,6 +146,7 @@ public class DownloadServices {
 	private Download getDownloadUrl(String enclosureId) throws DownloadException {
 		try {
 			String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
+
 			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
 			int expireInMinutes = 2; // periode to exipre the generated URL
 			String downloadURL = storageManager.generateDownloadURL(bucketName, fileToDownload, expireInMinutes)
@@ -166,9 +169,15 @@ public class DownloadServices {
 	 * @throws ExpirationEnclosureException
 	 */
 	private LocalDate validateDownloadAuthorization(String enclosureId, String recipientMail, String recipientId)
-			throws ExpirationEnclosureException, MetaloadException {
+			throws ExpirationEnclosureException, MetaloadException, StorageException {
 		Boolean recipientDeleted = false;
+		String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
 
+		String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
+		ObjectMetadata obj = storageManager.getObjectMetadata(bucketName,fileToDownload);
+		String hashFileFromS3 = obj.getETag();
+		String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager,enclosureId);
+		if(hashFileFromRedis.equals(hashFileFromS3)){
 		if (StringUtils.isNotBlank(recipientMail)) {
 			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
 
@@ -181,7 +190,8 @@ public class DownloadServices {
 		}
 
 		throw new ExpirationEnclosureException("Vous ne pouvez pas telecharger ces fichiers");
-
+		}
+		throw new DownloadException("Cannot get Download files of enclosure id ", enclosureId);
 	}
 
 	private LocalDate validateExpirationDate(String enclosureId)
