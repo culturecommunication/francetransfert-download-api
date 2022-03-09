@@ -185,7 +185,7 @@ public class DownloadServices {
 		String hashFileFromS3 = obj.getETag();
 		String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager, enclosureId);
 
-		if (StringUtils.isNotBlank(hashFileFromRedis) && hashFileFromRedis.equals(hashFileFromS3)) {
+		if (StringUtils.isNotBlank(hashFileFromRedis) && !hashFileFromRedis.equals(hashFileFromS3)) {
 			throw new ExpirationEnclosureException("Vous ne pouvez pas telecharger ces fichiers");
 		}
 
