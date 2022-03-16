@@ -286,7 +286,6 @@ public class DownloadServices {
 		String passwordRedis;
 		passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
 		if (passwordRedis != null && !StringUtils.isEmpty(passwordRedis)) {
-			passwordRedis = null;
 			return base64CryptoService.aesDecrypt(passwordRedis);
 		} else {
 			passwordRedis = null;
