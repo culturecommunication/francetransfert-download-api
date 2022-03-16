@@ -42,6 +42,7 @@ import fr.gouv.culture.francetransfert.core.utils.DateUtils;
 import fr.gouv.culture.francetransfert.core.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.domain.exceptions.InvalidHashException;
 
 @Service
 public class DownloadServices {
@@ -175,7 +176,7 @@ public class DownloadServices {
 	 * @throws ExpirationEnclosureException
 	 */
 	private LocalDate validateDownloadAuthorization(String enclosureId, String recipientMail, String recipientId)
-			throws ExpirationEnclosureException, MetaloadException, StorageException {
+			throws InvalidHashException, MetaloadException, StorageException {
 		Boolean recipientDeleted = false;
 		String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
 
@@ -185,7 +186,7 @@ public class DownloadServices {
 		String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager, enclosureId);
 
 		if (StringUtils.isNotBlank(hashFileFromRedis) && !hashFileFromRedis.equals(hashFileFromS3)) {
-			throw new ExpirationEnclosureException("Vous ne pouvez pas telecharger ces fichiers");
+			throw new InvalidHashException("Hash incorrect pour le pli " + enclosureId);
 		}
 
 		if (StringUtils.isNotBlank(recipientMail)) {
