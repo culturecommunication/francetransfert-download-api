@@ -63,12 +63,12 @@ public class DownloadServices {
 	@Autowired
 	Base64CryptoService base64CryptoService;
 
-	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientId,
+	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientToken,
 			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException {
-		validatePassword(enclosureId, password, recipientId);
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
-		validateDownloadAuthorization(enclosureId, recipientMailD, recipientId);
-		downloadProgress(enclosureId, recipientId);
+		validateDownloadAuthorization(enclosureId, recipientMailD, recipientToken);
+		validatePassword(enclosureId, password, recipientMail);
+		downloadProgress(enclosureId, recipientToken);
 		String statMessage = TypeStat.DOWNLOAD + ";" + enclosureId + ";" + recipientMailD;
 		redisManager.publishFT(RedisQueueEnum.STAT_QUEUE.getValue(), statMessage);
 		return getDownloadUrl(enclosureId);
