@@ -25,6 +25,7 @@ import fr.gouv.culture.francetransfert.domain.exceptions.BusinessDomainException
 import fr.gouv.culture.francetransfert.domain.exceptions.DomainNotFoundException;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.domain.exceptions.InvalidHashException;
 
 /**
  * The type StarterKit exception handler.
@@ -103,14 +104,22 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
 	}
 
 	@ExceptionHandler(UnauthorizedAccessException.class)
-	public ResponseEntity<Object> handleUnauthorizedAccessException(Exception ex) {
+	public ResponseEntity<Object> handleUnauthorizedAccessException(UnauthorizedAccessException ex) {
 		LOG.error("Handle error type UnauthorizedAccessException : " + ex.getMessage(), ex);
 		String errorId = UUID.randomUUID().toString();
 		LOG.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), errorId, ex.getMessage(),
 				ex);
-		return new ResponseEntity<>(
-				new ApiError(HttpStatus.UNAUTHORIZED.value(), ErrorEnum.WRONG_PASSWORD.getValue(), ex.getMessage()),
+		return new ResponseEntity<>(new ApiError(HttpStatus.UNAUTHORIZED.value(), ex.getType(), ex.getMessage()),
 				HttpStatus.UNAUTHORIZED);
+	}
+
+	@ExceptionHandler(InvalidHashException.class)
+	public ResponseEntity<Object> handleInvalidHashException(Exception ex) {
+		LOG.error("Handle error type InvalidHashException : " + ex.getMessage(), ex);
+		LOG.error("Type: {} -- id: {} -- message: {}", ErrorEnum.TECHNICAL_ERROR.getValue(), null, ex.getMessage(), ex);
+		return new ResponseEntity<>(
+				new ApiError(HttpStatus.NOT_FOUND.value(), ErrorEnum.HASH_INVALID.getValue(), ex.getMessage()),
+				HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler(ExpirationEnclosureException.class)

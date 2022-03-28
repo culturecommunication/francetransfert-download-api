@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
+import fr.gouv.culture.francetransfert.core.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,7 @@ public class DownloadRessources {
 	@PostMapping("/generate-download-url")
 	@Operation(method = "POST", description = "Generate download URL ")
 	public Download generateDownloadUrlWithPassword(@RequestBody DownloadPasswordMetaData downloadMeta)
-			throws ExpirationEnclosureException, UnsupportedEncodingException, MetaloadException {
+			throws ExpirationEnclosureException, UnsupportedEncodingException, MetaloadException, StorageException {
 		LOGGER.info("start generate download URL ");
 		return downloadServices.generateDownloadUrlWithPassword(downloadMeta.getEnclosure(),
 				downloadMeta.getRecipient(), downloadMeta.getToken(), downloadMeta.getPassword());
@@ -88,7 +89,7 @@ public class DownloadRessources {
 	public DownloadRepresentation downloadinfo(HttpServletResponse response,
 			@RequestParam("enclosure") String enclosure, @RequestParam("recipient") String recipient,
 			@RequestParam("token") String token)
-			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException {
+			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException, StorageException {
 		LOGGER.info("start donlowad info ");
 		DownloadRepresentation downloadRepresentation = downloadServices.getDownloadInfo(enclosure, token, recipient);
 		response.setStatus(HttpStatus.OK.value());

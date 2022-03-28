@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.amazonaws.services.s3.model.ObjectMetadata;
+
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.error.MaxTryException;
 import fr.gouv.culture.francetransfert.application.error.PasswordException;
@@ -32,6 +34,7 @@ import fr.gouv.culture.francetransfert.core.enums.RootFileKeysEnum;
 import fr.gouv.culture.francetransfert.core.enums.TypeStat;
 import fr.gouv.culture.francetransfert.core.exception.MetaloadException;
 import fr.gouv.culture.francetransfert.core.exception.StatException;
+import fr.gouv.culture.francetransfert.core.exception.StorageException;
 import fr.gouv.culture.francetransfert.core.services.RedisManager;
 import fr.gouv.culture.francetransfert.core.services.StorageManager;
 import fr.gouv.culture.francetransfert.core.utils.Base64CryptoService;
@@ -39,6 +42,7 @@ import fr.gouv.culture.francetransfert.core.utils.DateUtils;
 import fr.gouv.culture.francetransfert.core.utils.RedisUtils;
 import fr.gouv.culture.francetransfert.domain.exceptions.DownloadException;
 import fr.gouv.culture.francetransfert.domain.exceptions.ExpirationEnclosureException;
+import fr.gouv.culture.francetransfert.domain.exceptions.InvalidHashException;
 
 @Service
 public class DownloadServices {
@@ -64,10 +68,10 @@ public class DownloadServices {
 	Base64CryptoService base64CryptoService;
 
 	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientToken,
-			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException {
-		validatePassword(enclosureId, password, recipientMail);
+			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException, StorageException {
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
 		validateDownloadAuthorization(enclosureId, recipientMailD, recipientToken);
+		validatePassword(enclosureId, password, recipientMail);
 		downloadProgress(enclosureId, recipientToken);
 		String statMessage = TypeStat.DOWNLOAD + ";" + enclosureId + ";" + recipientMailD;
 		redisManager.publishFT(RedisQueueEnum.STAT_QUEUE.getValue(), statMessage);
@@ -93,7 +97,7 @@ public class DownloadServices {
 	}
 
 	public DownloadRepresentation getDownloadInfo(String enclosureId, String recipientId, String recipientMailInBase64)
-			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException {
+			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException, StorageException {
 
 		// validate Enclosure download right
 		String recipientMail = base64CryptoService.base64Decoder(recipientMailInBase64);
@@ -111,9 +115,14 @@ public class DownloadServices {
 			List<FileRepresentation> rootFiles = getRootFiles(enclosureId);
 			List<DirectoryRepresentation> rootDirs = getRootDirs(enclosureId);
 
-			return DownloadRepresentation.builder().validUntilDate(expirationDate).senderEmail(senderMail)
-					.recipientMail(recipientMail).message(message).rootFiles(rootFiles).rootDirs(rootDirs)
+			DownloadRepresentation downloadRepresentation = DownloadRepresentation.builder()
+					.validUntilDate(expirationDate).senderEmail(senderMail).recipientMail(recipientMail)
+					.message(message).rootFiles(rootFiles).rootDirs(rootDirs)
 					.withPassword(!StringUtils.isEmpty(passwordRedis)).build();
+
+			passwordRedis = null;
+
+			return downloadRepresentation;
 		} catch (Exception e) {
 			throw new DownloadException("Cannot get Download Info : " + e.getMessage(), enclosureId, e);
 		}
@@ -144,6 +153,7 @@ public class DownloadServices {
 	private Download getDownloadUrl(String enclosureId) throws DownloadException {
 		try {
 			String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
+
 			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
 			int expireInMinutes = 2; // periode to exipre the generated URL
 			String downloadURL = storageManager.generateDownloadURL(bucketName, fileToDownload, expireInMinutes)
@@ -166,22 +176,29 @@ public class DownloadServices {
 	 * @throws ExpirationEnclosureException
 	 */
 	private LocalDate validateDownloadAuthorization(String enclosureId, String recipientMail, String recipientId)
-			throws ExpirationEnclosureException, MetaloadException {
+			throws InvalidHashException, MetaloadException, StorageException {
 		Boolean recipientDeleted = false;
+		String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
+
+		String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
+		ObjectMetadata obj = storageManager.getObjectMetadata(bucketName, fileToDownload);
+		String hashFileFromS3 = obj.getETag();
+		String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager, enclosureId);
+
+		if (StringUtils.isNotBlank(hashFileFromRedis) && !hashFileFromRedis.equals(hashFileFromS3)) {
+			throw new InvalidHashException("Hash incorrect pour le pli " + enclosureId);
+		}
 
 		if (StringUtils.isNotBlank(recipientMail)) {
 			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
-
 		}
-		if(!recipientDeleted){
-		validateRecipientId(enclosureId, recipientMail, recipientId);
-		validateNumberOfDownload(recipientId);
-		LocalDate expirationDate = validateExpirationDate(enclosureId);
+		if (!recipientDeleted) {
+			validateRecipientId(enclosureId, recipientMail, recipientId);
+			validateNumberOfDownload(recipientId);
+			LocalDate expirationDate = validateExpirationDate(enclosureId);
 			return expirationDate;
 		}
-
-		throw new ExpirationEnclosureException("Vous ne pouvez pas telecharger ces fichiers");
-
+		throw new DownloadException("Cannot get Download files of enclosure id ", enclosureId);
 	}
 
 	private LocalDate validateExpirationDate(String enclosureId)
@@ -225,10 +242,10 @@ public class DownloadServices {
 		if (StringUtils.isNotBlank(recipientEncodedMail)) {
 			String recipientMailD = base64CryptoService.base64Decoder(recipientEncodedMail);
 			recipientId = RedisUtils.getRecipientId(redisManager, enclosureId, recipientMailD);
-			//recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
+			// recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
 
 		}
-		//if(!recipientDeleted){
+		// if(!recipientDeleted){
 		Map<String, String> enclosureMap = redisManager.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
 		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
 		try {
@@ -237,10 +254,12 @@ public class DownloadServices {
 			}
 			passwordUnHashed = getUnhashedPassword(enclosureId);
 		} catch (Exception e) {
+			passwordUnHashed = null;
 			throw new DownloadException("Error Unhashing password", enclosureId, e);
 		}
 
 		if (!(password != null && passwordUnHashed != null && password.equals(passwordUnHashed))) {
+			passwordUnHashed = null;
 			if (!publicLink) {
 				RedisUtils.incrementNumberOfPasswordTry(redisManager, recipientId);
 				redisManager.hsetString(RedisKeysEnum.FT_RECIPIENT.getKey(recipientId),
@@ -251,27 +270,27 @@ public class DownloadServices {
 			}
 			throw new PasswordException(ErrorEnum.WRONG_PASSWORD.getValue(), enclosureId, passwordCountTry + 1);
 		} else {
+			passwordUnHashed = null;
 			if (passwordCountTry <= maxPasswordTry) {
 				RedisUtils.resetPasswordTryCountPerRecipient(redisManager, recipientId);
 			} else {
 				throw new MaxTryException("Nombre d'essais maximum atteint", enclosureId);
 			}
 		}
-		/*}else {
-			throw new UnauthorizedAccessException("Unauthorized");
-		}*/
+		/*
+		 * }else { throw new UnauthorizedAccessException("Unauthorized"); }
+		 */
 	}
 
 	private String getUnhashedPassword(String enclosureId) throws MetaloadException, StatException {
 		String passwordRedis;
-		String passwordUnHashed;
 		passwordRedis = RedisUtils.getEnclosureValue(redisManager, enclosureId, EnclosureKeysEnum.PASSWORD.getKey());
 		if (passwordRedis != null && !StringUtils.isEmpty(passwordRedis)) {
-			passwordUnHashed = base64CryptoService.aesDecrypt(passwordRedis);
+			return base64CryptoService.aesDecrypt(passwordRedis);
 		} else {
+			passwordRedis = null;
 			throw new DownloadException("No Password for enclosure {}", enclosureId);
 		}
-		return passwordUnHashed;
 	}
 
 	private void downloadProgress(String enclosureId, String recipientId) throws DownloadException {
