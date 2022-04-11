@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.amazonaws.services.s3.model.ObjectMetadata;
-
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.error.MaxTryException;
 import fr.gouv.culture.francetransfert.application.error.PasswordException;
@@ -68,7 +66,8 @@ public class DownloadServices {
 	Base64CryptoService base64CryptoService;
 
 	public Download generateDownloadUrlWithPassword(String enclosureId, String recipientMail, String recipientToken,
-			String password) throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException, StorageException {
+			String password)
+			throws ExpirationEnclosureException, MetaloadException, UnsupportedEncodingException, StorageException {
 		String recipientMailD = base64CryptoService.base64Decoder(recipientMail);
 		validateDownloadAuthorization(enclosureId, recipientMailD, recipientToken);
 		validatePassword(enclosureId, password, recipientMail);
@@ -181,8 +180,7 @@ public class DownloadServices {
 		String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
 
 		String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
-		ObjectMetadata obj = storageManager.getObjectMetadata(bucketName, fileToDownload);
-		String hashFileFromS3 = obj.getETag();
+		String hashFileFromS3 = storageManager.getEtag(bucketName, fileToDownload);
 		String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager, enclosureId);
 
 		if (StringUtils.isNotBlank(hashFileFromRedis) && !hashFileFromRedis.equals(hashFileFromS3)) {
