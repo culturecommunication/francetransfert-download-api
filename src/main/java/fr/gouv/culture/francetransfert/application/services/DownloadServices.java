@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -192,7 +191,7 @@ public class DownloadServices {
 		}
 		if (!recipientDeleted) {
 			validateRecipientId(enclosureId, recipientMail, recipientId);
-			validateNumberOfDownload(recipientId);
+			validateNumberOfDownload(recipientId, enclosureId);
 			LocalDate expirationDate = validateExpirationDate(enclosureId);
 			return expirationDate;
 		}
@@ -209,11 +208,11 @@ public class DownloadServices {
 		return expirationDate;
 	}
 
-	private int validateNumberOfDownload(String recipientId) throws MetaloadException {
+	private int validateNumberOfDownload(String recipientId, String enclosureId) throws MetaloadException {
 		int numberOfDownload = RedisUtils.getNumberOfDownloadsPerRecipient(redisManager, recipientId);
 		if (maxDownload <= numberOfDownload) {
-			String uuid = UUID.randomUUID().toString();
-			throw new DownloadException(ErrorEnum.DOWNLOAD_LIMIT.getValue(), uuid);
+			LOGGER.error("DOWNLOAD_LIMIT for enclosure {}, for recipient {}", enclosureId, recipientId);
+			throw new DownloadException(ErrorEnum.DOWNLOAD_LIMIT.getValue(), enclosureId);
 		}
 		return numberOfDownload;
 	}
