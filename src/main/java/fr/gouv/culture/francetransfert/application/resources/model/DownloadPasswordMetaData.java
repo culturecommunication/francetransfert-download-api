@@ -1,21 +1,22 @@
 package fr.gouv.culture.francetransfert.application.resources.model;
 
+import javax.validation.constraints.NotBlank;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.validation.constraints.NotBlank;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class DownloadPasswordMetaData {
-    @NotBlank(message = "EnclosureId obligatoire")
-    private String enclosure;
-    private String recipient;
-    private String password;
-    private String token;
+	@NotBlank(message = "EnclosureId obligatoire")
+	private String enclosure;
+	private String recipient;
+	private String password;
+	private String token;
+	private String senderToken;
 
 }
