@@ -254,6 +254,7 @@ public class DownloadServices {
 		} else {
 			throw new ExpirationEnclosureException("Vous ne pouvez plus telecharger ces fichiers");
 		}
+		if (!recipientDeleted) {
 
 	}
 
