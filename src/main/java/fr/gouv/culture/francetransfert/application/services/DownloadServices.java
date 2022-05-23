@@ -1,9 +1,14 @@
 package fr.gouv.culture.francetransfert.application.services;
 
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import com.amazonaws.services.s3.model.ObjectMetadata;
 
 import fr.gouv.culture.francetransfert.application.error.ErrorEnum;
 import fr.gouv.culture.francetransfert.application.error.MaxTryException;
@@ -65,6 +72,7 @@ public class DownloadServices {
 
 	@Autowired
 	private Base64CryptoService base64CryptoService;
+
 
 	@Autowired
 	private StringUploadUtils stringUploadUtils;
@@ -124,6 +132,7 @@ public class DownloadServices {
 			throw new DownloadException(ErrorEnum.WRONG_ENCLOSURE.getValue(), enclosureId);
 		}
 	}
+
 
 	public DownloadRepresentation getDownloadInfoConnect(String enclosureId, String recipient)
 			throws UnsupportedEncodingException, ExpirationEnclosureException, MetaloadException, StorageException {
@@ -224,10 +233,12 @@ public class DownloadServices {
 		Boolean recipientDeleted = false;
 		String bucketName = RedisUtils.getBucketName(redisManager, enclosureId, bucketPrefix);
 
+
 		if (StringUtils.isNotBlank(recipientMail)) {
 			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
 		}
 		if (!recipientDeleted) {
+
 
 			String fileToDownload = storageManager.getZippedEnclosureName(enclosureId);
 			String hashFileFromS3 = storageManager.getEtag(bucketName, fileToDownload);
@@ -243,6 +254,8 @@ public class DownloadServices {
 		} else {
 			throw new ExpirationEnclosureException("Vous ne pouvez plus telecharger ces fichiers");
 		}
+		if (!recipientDeleted) {
+
 	}
 
 	private LocalDate validateExpirationDate(String enclosureId)
@@ -284,6 +297,7 @@ public class DownloadServices {
 		Boolean recipientDeleted = false;
 
 		if (StringUtils.isNotBlank(recipientEncodedMail)) {
+
 			if (stringUploadUtils.isValidEmail(recipientEncodedMail)) {
 				recipientId = RedisUtils.getRecipientId(redisManager, enclosureId, recipientEncodedMail);
 			} else {
@@ -344,6 +358,12 @@ public class DownloadServices {
 		try {
 			// increment nb_download for this recipient
 			RedisUtils.incrementNumberOfDownloadsForRecipient(redisManager, recipientId);
+			String keyPli = RedisKeysEnum.FT_Download_Date.getKey(recipientId);			 
+			Date localDate = new Date();
+			SimpleDateFormat  formater  = new SimpleDateFormat("dd/MM/yyyy 'à' hh:mm:ss");
+						
+			
+			redisManager.saddString(keyPli, formater.format(localDate));
 			// add to queue Redis download progress: to send download mail in progress to
 			// the sender
 			String downloadQueueValue = enclosureId + ":" + recipientId;
