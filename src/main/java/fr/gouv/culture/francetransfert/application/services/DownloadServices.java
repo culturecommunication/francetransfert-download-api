@@ -357,12 +357,10 @@ public class DownloadServices {
 		try {
 			// increment nb_download for this recipient
 			RedisUtils.incrementNumberOfDownloadsForRecipient(redisManager, recipientId);
-			String keyPli = RedisKeysEnum.FT_Download_Date.getKey(recipientId);			 
-			Date localDate = new Date();
-			SimpleDateFormat  formater  = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm:ss");
-						
-			
-			redisManager.saddString(keyPli, formater.format(localDate));
+			String keyPli = RedisKeysEnum.FT_Download_Date.getKey(recipientId);			 			
+			LocalDateTime date = LocalDateTime.now();
+
+			redisManager.saddString(keyPli, date.toString());
 			// add to queue Redis download progress: to send download mail in progress to
 			// the sender
 			String downloadQueueValue = enclosureId + ":" + recipientId;
