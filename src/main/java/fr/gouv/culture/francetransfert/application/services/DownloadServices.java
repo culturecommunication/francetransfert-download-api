@@ -359,7 +359,7 @@ public class DownloadServices {
 			RedisUtils.incrementNumberOfDownloadsForRecipient(redisManager, recipientId);
 			String keyPli = RedisKeysEnum.FT_Download_Date.getKey(recipientId);			 
 			Date localDate = new Date();
-			SimpleDateFormat  formater  = new SimpleDateFormat("dd/MM/yyyy 'à' hh:mm:ss");
+			SimpleDateFormat  formater  = new SimpleDateFormat("dd/MM/yyyy 'à' HH:mm:ss");
 						
 			
 			redisManager.saddString(keyPli, formater.format(localDate));
