@@ -245,6 +245,7 @@ public class DownloadServices {
 			String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager, enclosureId);
 
 			if (StringUtils.isNotBlank(hashFileFromRedis) && !hashFileFromRedis.equals(hashFileFromS3)) {
+				LOGGER.warn("msgtype: INVALID_HASH || enclosure: {} || sender: {}", enclosureId, recipientMail);
 				throw new InvalidHashException("Hash incorrect pour le pli " + enclosureId);
 			}
 			validateRecipientId(enclosureId, recipientMail, recipientId);
