@@ -1,3 +1,10 @@
+/*
+  * Copyright (c) Ministère de la Culture (2022) 
+  * 
+  * SPDX-License-Identifier: Apache-2.0 
+  * License-Filename: LICENSE.txt 
+  */
+
 package fr.gouv.culture.francetransfert.application.services;
 
 import java.io.UnsupportedEncodingException;
@@ -245,6 +252,7 @@ public class DownloadServices {
 			String hashFileFromRedis = RedisUtils.getHashFileFromredis(redisManager, enclosureId);
 
 			if (StringUtils.isNotBlank(hashFileFromRedis) && !hashFileFromRedis.equals(hashFileFromS3)) {
+				LOGGER.warn("msgtype: INVALID_HASH || enclosure: {} || recipient: {}", enclosureId, recipientMail);
 				throw new InvalidHashException("Hash incorrect pour le pli " + enclosureId);
 			}
 			validateRecipientId(enclosureId, recipientMail, recipientId);
