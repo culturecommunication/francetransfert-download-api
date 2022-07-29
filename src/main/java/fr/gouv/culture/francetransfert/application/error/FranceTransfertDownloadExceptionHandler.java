@@ -155,9 +155,10 @@ public class FranceTransfertDownloadExceptionHandler extends ResponseEntityExcep
 
 	@ExceptionHandler(PasswordException.class)
 	public ResponseEntity<Object> handleConfirmationCodeExcption(PasswordException ex) {
-		LOG.error("Handle error type PasswordException : " + ex.getMessage(), ex);
-		LOG.error("Type: {} -- id: {} -- message: {}", ex.getType(), ex.getId(), ex.getMessage(), ex);
-		return new ResponseEntity<>(new WrongCodeError(HttpStatus.UNAUTHORIZED.value(), ex.getCount(), ex.getMessage()),
+		LOG.error("Handle error type PasswordException : " + HttpStatus.UNAUTHORIZED.toString(), ex);
+		LOG.error("Type: {} -- id: {} -- message: {}", ex.getType(), ex.getId(), HttpStatus.UNAUTHORIZED.toString(), ex);
+		return new ResponseEntity<>(
+				new WrongCodeError(HttpStatus.UNAUTHORIZED.value(), ex.getCount(), HttpStatus.UNAUTHORIZED.toString()),
 				HttpStatus.UNAUTHORIZED);
 	}
 
