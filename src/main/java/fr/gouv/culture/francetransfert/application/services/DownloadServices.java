@@ -301,7 +301,12 @@ public class DownloadServices {
 		String passwordUnHashed = "";
 		int passwordCountTry = 0;
 		String recipientId = "";
-		Boolean recipientDeleted = false;
+		Boolean recipientDeleted = true;
+		
+		Map<String, String> enclosureMap = redisManager
+				.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
+		Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
+		
 
 		if (StringUtils.isNotBlank(recipientEncodedMail)) {
 
@@ -314,10 +319,7 @@ public class DownloadServices {
 			recipientDeleted = RedisUtils.isRecipientDeleted(redisManager, recipientId);
 		}
 
-		if (!recipientDeleted) {
-			Map<String, String> enclosureMap = redisManager
-					.hmgetAllString(RedisKeysEnum.FT_ENCLOSURE.getKey(enclosureId));
-			Boolean publicLink = Boolean.valueOf(enclosureMap.get(EnclosureKeysEnum.PUBLIC_LINK.getKey()));
+		if (!recipientDeleted || publicLink) {
 			try {
 				if (!publicLink) {
 					passwordCountTry = RedisUtils.getPasswordTryCountPerRecipient(redisManager, recipientId);
