@@ -238,7 +238,7 @@
 			<plugin>
 				<groupId>io.gatling</groupId>
 				<artifactId>gatling-maven-plugin</artifactId>
-				<version>4.2.3</version>
+				<version>4.2.4</version>
 				<configuration>
 					<configFolder>src/test/perf/resources</configFolder>
 					<dataFolder>src/test/perf/resources/data</dataFolder>
