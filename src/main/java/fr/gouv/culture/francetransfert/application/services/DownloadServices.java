@@ -80,17 +80,15 @@ public class DownloadServices {
 			throws ExpirationEnclosureException, UnsupportedEncodingException, MetaloadException, StorageException {
 
 		String recipientIdRedis;
-		String recipientMail;
+		String recipientMail = downloadMeta.getRecipient().toLowerCase();
 
 		if (downloadMeta.getSenderToken() != null) {
 			redisManager.validateToken(downloadMeta.getRecipient().toLowerCase(), downloadMeta.getSenderToken());
 			recipientIdRedis = RedisUtils.getRecipientId(redisManager, downloadMeta.getEnclosure(),
 					downloadMeta.getRecipient().toLowerCase());
-			recipientMail = downloadMeta.getRecipient().toLowerCase();
 
 		} else {
 			recipientIdRedis = downloadMeta.getToken();
-			recipientMail = base64CryptoService.base64Decoder(downloadMeta.getRecipient());
 		}
 
 		if (!stringUploadUtils.isValidEmail(recipientMail)) {
