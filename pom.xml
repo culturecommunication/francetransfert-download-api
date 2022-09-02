@@ -11,7 +11,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.2</version>
+		<version>2.7.3</version>
 	</parent>
 
 
@@ -20,8 +20,8 @@
 		<!-- dependencies version -->
 		<swagger-annotations-version>1.6.3</swagger-annotations-version>
 		<swagger.codegen.version>2.4.24</swagger.codegen.version>
-		<jersey-version>3.0.5</jersey-version>
-		<jodatime-version>2.10.14</jodatime-version>
+		<jersey-version>3.0.7</jersey-version>
+		<jodatime-version>2.11.1</jodatime-version>
 		<build-helper-maven-plugin.version>3.3.0</build-helper-maven-plugin.version>
 		<!-- java version -->
 		<java.source.version>11</java.source.version>
@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.6.9</version>
+			<version>1.6.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -96,14 +96,14 @@
 		<dependency>
 			<groupId>io.gatling.highcharts</groupId>
 			<artifactId>gatling-charts-highcharts</artifactId>
-			<version>3.8.2</version>
+			<version>3.8.3</version>
 			<scope>test</scope>
 		</dependency>
 		<!-- JSON TO OBJECT && OBJECT TO JSON -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.9.0</version>
+			<version>2.9.1</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
@@ -147,7 +147,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>2.7.2</version>
+				<version>2.7.3</version>
 				<configuration>
 					<profiles>
 						<profile>dev</profile>
@@ -238,7 +238,7 @@
 			<plugin>
 				<groupId>io.gatling</groupId>
 				<artifactId>gatling-maven-plugin</artifactId>
-				<version>4.2.2</version>
+				<version>4.2.6</version>
 				<configuration>
 					<configFolder>src/test/perf/resources</configFolder>
 					<dataFolder>src/test/perf/resources/data</dataFolder>
@@ -296,7 +296,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-assembly-plugin</artifactId>
-						<version>3.4.1</version>
+						<version>3.4.2</version>
 						<configuration>
 							<descriptors>
 								<descriptor>src/build/assembly/delivery-descriptor.xml</descriptor>
@@ -402,7 +402,7 @@
 				<dependency>
 					<groupId>org.glassfish.jersey.core</groupId>
 					<artifactId>jersey-client</artifactId>
-					<version>3.0.5</version>
+					<version>3.0.7</version>
 				</dependency>
 				<dependency>
 					<groupId>com.squareup.okhttp</groupId>
