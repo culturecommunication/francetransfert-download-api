@@ -12,7 +12,6 @@ import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import fr.gouv.culture.francetransfert.core.exception.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,8 +85,8 @@ public class DownloadRessources {
 			throws Exception {
 		ValidatePasswordRepresentation representation = new ValidatePasswordRepresentation();
 		try {
-			downloadServices.validatePassword(metaData.getEnclosureId(), metaData.getPassword(),
-					metaData.getRecipientId());
+			String recipientId = downloadServices.getRecipientId(metaData.getEnclosureId(), metaData.getRecipientId());
+			downloadServices.validatePassword(metaData.getEnclosureId(), metaData.getPassword(), recipientId);
 			representation.setValid(true);
 		} catch (Exception e) {
 			representation.setValid(false);
